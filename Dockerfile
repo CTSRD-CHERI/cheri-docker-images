@@ -20,7 +20,6 @@ RUN apt-get install -y libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debia
 COPY ./QEMU-${target}/qemu-cheri-install /cheri-sdk
 
 # install CHERI SDK
-RUN mkdir /cheri-sdk
 COPY ./${target}-vanilla-jemalloc-sdk.tar.xz /tmp
 RUN tar Jxf /tmp/${target}-vanilla-jemalloc-sdk.tar.xz --strip-components 1 -C /cheri-sdk \
   && rm /tmp/${target}-vanilla-jemalloc-sdk.tar.xz
