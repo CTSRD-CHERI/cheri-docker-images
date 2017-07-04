@@ -11,7 +11,7 @@ node("docker") {
     }
     stage("Copy artifacts") {
         // fetch cmake
-        sh "test -e cmake.tar.gz || curl -O https://cmake.org/files/v3.9/$cmakeArchive"
+        sh "test -e $cmakeArchive || curl -O https://cmake.org/files/v3.9/$cmakeArchive"
         step([$class     : 'CopyArtifact',
               projectName: "CHERI-binutils/label=linux/",
               filter     : "binutils.tar.bz2"])
