@@ -50,16 +50,15 @@ node("docker") {
         def app
         stage("Build ${cpu} image") {
             dir("${cpu}-build") {
-                // hard link the required archives and dockerfile to the build directory
-                sh "ln -f ../Dockerfile ."
-                sh "ln -f ../binutils.tar.gz ."
-                sh "ln -f ../${cmakeArchive} ."
-
-                sh "pwd; ls -la"
-                sh "cat Dockerfile"
-                echo "CPU=${cpu}"
-                env.CPU = "${cpu}"
-
+                // symlink link the required archives and hardlink dockerfile to the build directory
+                sh """
+                        pwd; ls -la
+                        ls -la ..
+                        ln -f ../Dockerfile .
+                        ln -sfn ../binutils.tar.gz .
+                        ln -sfn ../${cmakeArchive} .
+                        cat Dockerfile
+                        """
                 // sh "env | sort"
                 /* This builds the actual image; synonymous to docker build on the command line */
                 app = docker.build("ctsrd/cheri-sdk-${cpu}", "-q --build-arg target=${cpu} .")
