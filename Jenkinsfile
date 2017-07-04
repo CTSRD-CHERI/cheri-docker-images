@@ -1,6 +1,6 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
+properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 node('docker') {
-    env.CPU = "cheri256"
     def app
     stage('Clone repository') {
         /* Let's make sure we have the repository cloned to our workspace */
@@ -12,12 +12,17 @@ node('docker') {
     for(String cpu : ["cheri256", "cheri128", "mips"]) {
         dockerBuildTasks["${cpu}"] = {
             echo "CPU=${cpu}"
+            env.CPU = "${cpu}"
             sh "env | sort"
             def ISA = "vanilla"
             // copy the Linux SDK
+            def SdkArtifactName = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
+            def SdkArtifactFilter = "${cpu}-${ISA}-jemalloc-sdk.tar.xz"
+            println(SdkArtifactName)
+            println(SdkArtifactFilter)
             step ([$class: 'CopyArtifact',
-                   projectName: "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/",
-                   filter: "${cpu}-${ISA}-jemalloc-sdk.tar.xz"])
+                   projectName: SdkArtifactName,
+                   filter: SdkArtifactFilter])
 
             /* This builds the actual image; synonymous to docker build on the command line */
             app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
