@@ -15,7 +15,7 @@ node('docker') {
             sh "env | sort"
             /* This builds the actual image; synonymous to
              * docker build on the command line */
-            app = docker.build("ctsrd/cheri-sdk-${cpu}")
+            app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
         }
     }
     stage ("Build images") {
