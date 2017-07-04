@@ -9,33 +9,28 @@ node("docker") {
         checkout scm
         sh "pwd"
     }
-    // fetch cmake
-    stage("Download CMake") {
+    stage("Copy artifacts") {
+        // fetch cmake
         sh "test -e cmake.tar.gz || curl -O https://cmake.org/files/v3.9/$cmakeArchive"
-    }
-    stage("Copy binutils") {
         step([$class     : 'CopyArtifact',
               projectName: "CHERI-binutils/label=linux/",
               filter     : "binutils.tar.bz2"])
-    }
-
-    for (String cpu : targets) {
-        stage("Copy artifacts for ${cpu}") {
+        for (String cpu : targets) {
             sh "mkdir -p ${cpu}-build"
-            echo "Copying CheriBSD sysroot"
+            echo "Copying CheriBSD ${cpu} sysroot"
             step([$class     : 'CopyArtifact',
                   projectName: "CHERIBSD-WORLD/ALLOC=jemalloc,CPU=${cpu},ISA=vanilla/",
                   filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz",
                   target     : "${cpu}-build"])
             // def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
             if (cpu == "cheri128" || cpu == "cheri256") {
-                echo "Copying clang artifacts"
+                echo "Copying clang ${cpu} artifacts"
                 step([$class     : 'CopyArtifact',
                       projectName: "CLANG-LLVM-master/CPU=${cpu},label=linux/",
                       filter     : "*.tar.xz",
                       target     : "${cpu}-build"])
                 def qemuCPU = cpu == "cheri128" ? "cheri128" : "cheri"
-                echo "Copying QEMU artifacts"
+                echo "Copying QEMU ${cpu} artifacts"
                 step([$class     : 'CopyArtifact',
                       projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
                       filter     : "qemu-cheri-install/**",
@@ -47,15 +42,16 @@ node("docker") {
                 }
             }
         }
+        sh "ls -la"
+        sh "ls -la *-build"
     }
-    sh "ls -la"
-    sh "ls -la *-build"
+
     for (String cpu : targets) {
         def app
         stage("Build ${cpu} image") {
             dir("${cpu}-build") {
                 // hard link the required archives and dockerfile to the build directory
-                sh "ln -f Dockerfile ."
+                sh "ln -f ../Dockerfile ."
                 sh "ln -f ../binutils.tar.gz ."
                 sh "ln -f ../${cmakeArchive} ."
 
