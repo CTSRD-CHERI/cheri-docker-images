@@ -1,6 +1,7 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 def targets = ["cheri256", "cheri128", "mips"]
+def cmakeArchive = 'cmake-3.9.0-rc5-Linux-x86_64.tar.gz'
 
 node("docker") {
     stage('Clone repository') {
@@ -10,8 +11,7 @@ node("docker") {
     }
     // fetch cmake
     stage("Download CMake") {
-        def cmakeArchive = 'cmake-3.9.0-rc5-Linux-x86_64.tar.gz'
-        sh "test -e ${cmakeArchive} || curl -O https://cmake.org/files/v3.9/${cmakeArchive}"
+        sh "test -e cmake.tar.gz || curl https://cmake.org/files/v3.9/cmake-3.9.0-rc5-Linux-x86_64.tar.gz |"
     }
     stage("Copy binutils") {
         step([$class     : 'CopyArtifact',
@@ -55,7 +55,9 @@ node("docker") {
         stage("Build ${cpu} image") {
             dir("${cpu}-build") {
                 sh "rm -f Dockerfile; cp ../Dockerfile ."
+                // symlink the required archives to the build directory
                 sh "ln -sf ../binutils.tar.gz ."
+                sh "ln -sf ../${cmakeArchive} ."
 
                 sh "pwd; ls -la"
                 sh "cat Dockerfile"
