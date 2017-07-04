@@ -10,7 +10,7 @@ node('docker') {
     // TODO: parallel build of cheri256/cheri128/mips
     for(String cpu : ["cheri256"]) {
         dockerBuildTasks["${cpu}"] = {
-            node(cpu) {
+            node("docker") {
                 echo "CPU=${cpu}"
                 sh "env | sort"
                 /* This builds the actual image; synonymous to
