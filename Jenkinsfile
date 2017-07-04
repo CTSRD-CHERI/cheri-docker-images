@@ -12,15 +12,16 @@ node("docker") {
             step([$class     : 'CopyArtifact',
                   projectName: SdkProject,
                   filter     : SdkArtifactFilter])
-            if (cpu == "cheri256") {
-                step([$class     : 'CopyArtifact',
-                      projectName: "QEMU-CHERI-multi/CPU=cheri,label=linux/",
-                      filter     : "qemu-cheri-install/**"])
+            def qemuCPU
+            if (cpu == "cheri256" || cpu == "mips") {
+                qemuCPU = "cheri"
             } else if (cpu == "cheri128") {
-                step([$class     : 'CopyArtifact',
-                      projectName: "QEMU-CHERI-multi/CPU=cheri,label=linux/",
-                      filter     : "qemu-cheri-install/**"])
+                qemuCPU == "cheri128"
             }
+            step([$class     : 'CopyArtifact',
+                  projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
+                  filter     : "qemu-cheri-install/**",
+                  target     : "QEMU-${cpu}"])
         }
     }
     for (String cpu : targets) {

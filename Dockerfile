@@ -12,11 +12,12 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get install -y libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debian
 
 # install QEMU
-COPY ./qemu-${target}-install.zip /tmp
-RUN unzip /tmp/qemu-${target}-install.zip -d /tmp \
-  && chmod +x /tmp/qemu-cheri-install/bin/* \
-  && cp -rv /tmp/qemu-cheri-install/* /cheri-sdk \
-  && rm /tmp/qemu-${target}-install.zip && rm -r /tmp/qemu-cheri-install
+#COPY ./qemu-${target}-install.zip /tmp
+#RUN unzip /tmp/qemu-${target}-install.zip -d /tmp \
+#  && chmod +x /tmp/qemu-cheri-install/bin/* \
+#  && cp -rv /tmp/qemu-cheri-install/* /cheri-sdk \
+#  && rm /tmp/qemu-${target}-install.zip && rm -r /tmp/qemu-cheri-install
+COPY ./QEMU-${cpu}/qemu-cheri-install /cheri-sdk
 
 # install CHERI SDK
 RUN mkdir /cheri-sdk
