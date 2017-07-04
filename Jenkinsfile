@@ -1,6 +1,6 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
-def targets = ["cheri256"]
+def targets = ["cheri256", "cheri128", "mips"]
 
 def dockerBuildTasks = [:]
 
@@ -33,7 +33,7 @@ for (String cpu : targets) {
                 sh "pwd"
                 echo "CPU=${cpu}"
                 env.CPU = "${cpu}"
-                sh "env | sort"
+                // sh "env | sort"
                 /* This builds the actual image; synonymous to docker build on the command line */
                 app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
             }
