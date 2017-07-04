@@ -3,6 +3,11 @@ properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 def targets = ["cheri256"]
 
 node("docker") {
+    stage('Clone repository') {
+        /* Let's make sure we have the repository cloned to our workspace */
+        checkout scm
+        sh "pwd"
+    }
     for (String cpu : targets) {
         stage("Copy artifacts for ${cpu}") {
             def ISA = "vanilla"
@@ -26,13 +31,6 @@ node("docker") {
     }
     for (String cpu : targets) {
         def app
-        sh "pwd"
-        stage('Clone repository') {
-            /* Let's make sure we have the repository cloned to our workspace */
-            checkout scm
-            sh "pwd"
-        }
-
         stage("Build ${cpu} image") {
             sh "pwd"
             echo "CPU=${cpu}"
