@@ -9,12 +9,17 @@ node('docker') {
 
     def dockerBuildTasks = [:]
     // TODO: parallel build of cheri256/cheri128/mips
-    for(String cpu : ["cheri256"]) {
+    for(String cpu : ["cheri256", "cheri128", "mips"]) {
         dockerBuildTasks["${cpu}"] = {
             echo "CPU=${cpu}"
             sh "env | sort"
-            /* This builds the actual image; synonymous to
-             * docker build on the command line */
+            def ISA = "vanilla"
+            // copy the Linux SDK
+            step ([$class: 'CopyArtifact',
+                   projectName: 'CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/',
+                   filter: '${cpu}-${ISA}-jemalloc-sdk.tar.xz'])
+
+            /* This builds the actual image; synonymous to docker build on the command line */
             app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
         }
     }
