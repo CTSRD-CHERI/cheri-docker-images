@@ -43,7 +43,8 @@ RUN tar Jxf /tmp/${target}-master-clang-llvm.tar.xz --strip-components 1 -C /che
   && rm /tmp/${target}-master-clang-llvm.tar.xz
 # install cheribsd sysroot
 COPY ./${target}-vanilla-jemalloc-cheribsd-world.tar.xz /tmp
-RUN tar Jxf /tmp/${target}-vanilla-jemalloc-cheribsd-world.tar.xz --strip-components 1 -C /cheri-sdk \
+# --exclude=bin so that we don't extract the freebsd binaries
+RUN tar Jxf /tmp/${target}-vanilla-jemalloc-cheribsd-world.tar.xz --strip-components 1 -C /cheri-sdk --exclude=bin \
   && rm /tmp/${target}-vanilla-jemalloc-cheribsd-world.tar.xz
 
 # Do this last, it will change frequently

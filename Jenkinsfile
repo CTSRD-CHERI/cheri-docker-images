@@ -39,14 +39,9 @@ node("docker") {
                 sh "ln -sf QEMU-cheri256 QEMU-mips"
             }
             echo "Copying CheriBSD sysroot"
-
             step([$class     : 'CopyArtifact',
                   projectName: "CHERIBSD-WORLD/ALLOC=jemalloc,CPU=${cpu},ISA=vanilla/",
                   filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz"])
-
-            echo "Copying QEMU"
-
-
         }
     }
     sh "ls -la"
