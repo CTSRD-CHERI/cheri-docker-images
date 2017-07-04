@@ -16,12 +16,11 @@ node('docker') {
             sh "env | sort"
             def ISA = "vanilla"
             // copy the Linux SDK
-            def SdkArtifactName = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
+            def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
             def SdkArtifactFilter = "${cpu}-${ISA}-jemalloc-sdk.tar.xz"
-            println(SdkArtifactName)
-            println(SdkArtifactFilter)
+            echo "project=${SdkProject}, filter=${SdkArtifactFilter}"
             step ([$class: 'CopyArtifact',
-                   projectName: SdkArtifactName,
+                   projectName: SdkProject,
                    filter: SdkArtifactFilter])
 
             /* This builds the actual image; synonymous to docker build on the command line */
