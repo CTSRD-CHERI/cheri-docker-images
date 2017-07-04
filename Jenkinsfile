@@ -1,5 +1,6 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
+def targets = ["cheri256"]
 node('docker') {
     def app
     stage('Clone repository') {
@@ -7,28 +8,30 @@ node('docker') {
         checkout scm
     }
 
+    stage ("Copy artifacts images") {
+        for (String cpu : targets) {
+            def ISA = "vanilla"
+            def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
+            def SdkArtifactFilter = "${cpu}-${ISA}-jemalloc-sdk.tar.xz"
+            echo "Copying SDK project=${SdkProject}, filter=${SdkArtifactFilter}"
+            step([$class     : 'CopyArtifact',
+                  projectName: SdkProject,
+                  filter     : SdkArtifactFilter])
+        }
+    }
+
     def dockerBuildTasks = [:]
-    // TODO: parallel build of cheri256/cheri128/mips
-    // for(String cpu : ["cheri256", "cheri128", "mips"]) {
-    for(String cpu : ["cheri256"]) {
+    for(String cpu : targets) {
         dockerBuildTasks["${cpu}"] = {
             echo "CPU=${cpu}"
             env.CPU = "${cpu}"
             sh "env | sort"
-            def ISA = "vanilla"
-            // copy the Linux SDK
-            def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
-            def SdkArtifactFilter = "${cpu}-${ISA}-jemalloc-sdk.tar.xz"
-            echo "project=${SdkProject}, filter=${SdkArtifactFilter}"
-            step ([$class: 'CopyArtifact',
-                   projectName: SdkProject,
-                   filter: SdkArtifactFilter])
-
             /* This builds the actual image; synonymous to docker build on the command line */
             app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
         }
     }
     stage ("Build images") {
+        // TODO: parallel build of cheri256/cheri128/mips
         parallel dockerBuildTasks
     }
 
