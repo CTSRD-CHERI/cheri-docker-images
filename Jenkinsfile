@@ -52,16 +52,15 @@ node("docker") {
             dir("${cpu}-build") {
                 // symlink link the required archives and hardlink dockerfile to the build directory
                 sh """
-                        pwd; ls -la
-                        ls -la ..
                         ln -f ../Dockerfile .
-                        ln -sfn ../binutils.tar.gz .
-                        ln -sfn ../${cmakeArchive} .
-                        cat Dockerfile
+                        mv ../binutils.tar.gz .
+                        mv ../${cmakeArchive} .
                         """
                 // sh "env | sort"
                 /* This builds the actual image; synonymous to docker build on the command line */
                 app = docker.build("ctsrd/cheri-sdk-${cpu}", "-q --build-arg target=${cpu} .")
+                // move the files back:
+                sh "mv binutils.tar.gz ${cmakeArchive} .."
             }
         }
 
