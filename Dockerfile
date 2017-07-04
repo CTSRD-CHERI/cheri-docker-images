@@ -17,15 +17,16 @@ ADD cmake-3.9.0-rc5-Linux-x86_64.tar.gz /usr/local
 # install cheri binutils
 COPY ./binutils.tar.bz2 /tmp
 RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
-  && mkdir /cheri-sdk && mv /tmp/binutils/bin /cheri-sdk \
+  && mkdir -p /cheri-sdk/bin && mv /tmp/binutils/bin/* /cheri-sdk/bin \
   && (cd /cheri-sdk/bin \
       && mv mips64-ld mips64-ld.bfd \
       && rm mips64-ar mips64-c++filt mips64-coffdump mips64-nlmconv mips64-ranlib mips64-srconv mips64-sysdump \
       && for TOOL in addr2line as ld.bfd nm objcopy objdump readelf size strings strip; do \
-        ln -fs $TOOL cheri-unknown-freebsd-$TOOL ; \
-        ln -fs $TOOL mips4-unknown-freebsd-$TOOL ;\
-        ln -fs $TOOL mips64-unknown-freebsd-$TOOL ; \
+        ln -fs mips64-$TOOL cheri-unknown-freebsd-$TOOL ; \
+        ln -fs mips64-$TOOL mips4-unknown-freebsd-$TOOL ;\
+        ln -fs mips64-$TOOL mips64-unknown-freebsd-$TOOL ; \
       done) \
+  && ln -s /usr/bin/ar /cheri-sdk/bin/mips64-ar \
   && rm -r /tmp/binutils.tar.bz2 /tmp/binutils
 
 

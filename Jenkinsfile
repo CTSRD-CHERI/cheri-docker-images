@@ -74,8 +74,12 @@ node("docker") {
             /* Ideally, we would run a test framework against our image.
              * For this example, we're using a Volkswagen-type approach ;-) */
             app.inside {
-                sh 'echo "Tests passed"'
                 sh "env | sort"
+                // check that QEMU works
+                sh "qemu-system-cheri --help"
+                sh "cheri-unknown-freebsd-clang --version"
+                sh "ls /cheri-sdk/bin"
+
             }
         }
         if (false) {
