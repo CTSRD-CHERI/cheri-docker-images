@@ -4,12 +4,6 @@ def targets = ["cheri256"]
 
 def dockerBuildTasks = [:]
 
-stage('Clone repository') {
-    /* Let's make sure we have the repository cloned to our workspace */
-    checkout scm
-    sh "pwd"
-}
-
 for (String cpu : targets) {
     dockerBuildTasks["${cpu}"] = {
         node('docker') {
@@ -57,8 +51,14 @@ for (String cpu : targets) {
         }
     }
 }
-
-stage("Build images") {
-    sh "pwd"
-    parallel dockerBuildTasks
+node {
+    stage('Clone repository') {
+        /* Let's make sure we have the repository cloned to our workspace */
+        checkout scm
+        sh "pwd"
+    }
+    stage("Build images") {
+        sh "pwd"
+        parallel dockerBuildTasks
+    }
 }
