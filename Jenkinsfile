@@ -1,16 +1,25 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 node('docker') {
+    env.CPU = "cheri256"
     def app
     stage('Clone repository') {
         /* Let's make sure we have the repository cloned to our workspace */
         checkout scm
     }
-
-    stage('Build image') {
-        sh "env | sort"
-        /* This builds the actual image; synonymous to
-         * docker build on the command line */
-        app = docker.build("ctsrd/cheri-sdk-${env.CPU}", "--build-arg target=${env.CPU}")
+    // TODO: parallel build of cheri256/cheri128/mips
+    for(String cpu : ["cheri256"]) {
+        tasks["${cpu}"] = {
+            node(cpu) {
+                echo "CPU=${cpu}"
+                sh "env | sort"
+                /* This builds the actual image; synonymous to
+                 * docker build on the command line */
+                app = docker.build("ctsrd/cheri-sdk-${cpu}")
+            }
+        }
+    }
+    stage ("Build images") {
+        parallel tasks
     }
 
     stage('Test image') {
