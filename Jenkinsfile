@@ -54,8 +54,8 @@ node("docker") {
         def app
         stage("Build ${cpu} image") {
             dir("${cpu}-build") {
-                sh "ln -s ../Dockerfile ."
-                sh "ln -s ../binutils.tar.gz ."
+                sh "ln -sf ../Dockerfile ."
+                sh "ln -sf ../binutils.tar.gz ."
 
                 sh "pwd; ls -la"
                 sh "cat Dockerfile"
