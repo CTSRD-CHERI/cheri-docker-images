@@ -16,8 +16,8 @@ node('docker') {
             def ISA = "vanilla"
             // copy the Linux SDK
             step ([$class: 'CopyArtifact',
-                   projectName: 'CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/',
-                   filter: '${cpu}-${ISA}-jemalloc-sdk.tar.xz'])
+                   projectName: "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/",
+                   filter: "${cpu}-${ISA}-jemalloc-sdk.tar.xz"])
 
             /* This builds the actual image; synonymous to docker build on the command line */
             app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
