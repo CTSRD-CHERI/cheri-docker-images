@@ -29,7 +29,7 @@ node("docker") {
                       projectName: "CLANG-LLVM-master/CPU=${cpu},label=linux/",
                       filter     : "*.tar.xz"])
             } else {
-                sh "ln -s cheri256-master-clang-llvm.tar.xz $cpu-master-clang-llvm.tar.xz"
+                sh "ln -sf cheri256-master-clang-llvm.tar.xz $cpu-master-clang-llvm.tar.xz"
             }
             echo "Copying CheriBSD sysroot"
 
