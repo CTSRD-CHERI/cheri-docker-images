@@ -20,26 +20,22 @@ node("docker") {
             echo "Copying CheriBSD ${cpu} sysroot"
             step([$class     : 'CopyArtifact',
                   projectName: "CHERIBSD-WORLD/ALLOC=jemalloc,CPU=${cpu},ISA=vanilla/",
-                  filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz",
-                  target     : "${cpu}-build"])
+                  filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz"])
             // def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
             if (cpu == "cheri128" || cpu == "cheri256") {
                 echo "Copying clang ${cpu} artifacts"
                 step([$class     : 'CopyArtifact',
                       projectName: "CLANG-LLVM-master/CPU=${cpu},label=linux/",
-                      filter     : "*.tar.xz",
-                      target     : "${cpu}-build"])
+                      filter     : "*.tar.xz"])
                 def qemuCPU = cpu == "cheri128" ? "cheri128" : "cheri"
                 echo "Copying QEMU ${cpu} artifacts"
                 step([$class     : 'CopyArtifact',
                       projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
                       filter     : "qemu-cheri-install/**",
-                      target     : "${cpu}-build"])
+                      target     : "QEMU-$cpu"])
             } else {
-                dir("${cpu}-build") {
-                    sh "ln -sf ../cheri256-build/cheri256-master-clang-llvm.tar.xz ${cpu}-master-clang-llvm.tar.xz"
-                    sh "ln -sf ../cheri256-build/qemu-cheri-install ."
-                }
+                sh "ln -sf cheri256-master-clang-llvm.tar.xz ${cpu}-master-clang-llvm.tar.xz"
+                sh "ln -sf QEMU-cheri QEMU-$cpu"
             }
         }
         sh "ls -la"
@@ -49,19 +45,9 @@ node("docker") {
     for (String cpu : targets) {
         def app
         stage("Build ${cpu} image") {
-            dir("${cpu}-build") {
-                // symlink link the required archives and hardlink dockerfile to the build directory
-                sh """
-                        ln -f ../Dockerfile .
-                        mv ../binutils.tar.gz .
-                        mv ../${cmakeArchive} .
-                        """
-                // sh "env | sort"
-                /* This builds the actual image; synonymous to docker build on the command line */
-                app = docker.build("ctsrd/cheri-sdk-${cpu}", "-q --build-arg target=${cpu} .")
-                // move the files back:
-                sh "mv binutils.tar.gz ${cmakeArchive} .."
-            }
+            // sh "env | sort"
+            /* This builds the actual image; synonymous to docker build on the command line */
+            app = docker.build("ctsrd/cheri-sdk-${cpu}", "-q --build-arg target=${cpu} .")
         }
 
         stage("Test ${cpu} image") {
@@ -91,11 +77,6 @@ node("docker") {
     }
 
     stage ("Cleaning up") {
-        for (String cpu : targets) {
-            dir("${cpu}-build") {
-                deleteDir()
-            }
-        }
         sh "ls -la"
     }
 }
