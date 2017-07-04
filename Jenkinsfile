@@ -6,9 +6,10 @@ node('docker') {
         /* Let's make sure we have the repository cloned to our workspace */
         checkout scm
     }
+    def dockerBuildTasks = [:]
     // TODO: parallel build of cheri256/cheri128/mips
     for(String cpu : ["cheri256"]) {
-        tasks["${cpu}"] = {
+        dockerBuildTasks["${cpu}"] = {
             node(cpu) {
                 echo "CPU=${cpu}"
                 sh "env | sort"
@@ -19,7 +20,7 @@ node('docker') {
         }
     }
     stage ("Build images") {
-        parallel tasks
+        parallel dockerBuildTasks
     }
 
     stage('Test image') {
