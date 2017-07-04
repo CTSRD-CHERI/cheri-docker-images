@@ -11,7 +11,7 @@ node("docker") {
     }
     // fetch cmake
     stage("Download CMake") {
-        sh "test -e cmake.tar.gz || curl https://cmake.org/files/v3.9/cmake-3.9.0-rc5-Linux-x86_64.tar.gz |"
+        sh "test -e cmake.tar.gz || curl -O https://cmake.org/files/v3.9/$cmakeArchive"
     }
     stage("Copy binutils") {
         step([$class     : 'CopyArtifact',
