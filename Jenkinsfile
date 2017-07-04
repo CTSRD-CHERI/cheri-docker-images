@@ -10,7 +10,7 @@ for (String cpu : targets) {
             def app
             sh "pwd"
 
-            stage("Copy artifacts") {
+            stage("Copy artifacts for ${cpu}") {
                 def ISA = "vanilla"
                 def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
                 def SdkArtifactFilter = "${cpu}-${ISA}-jemalloc-sdk.tar.xz"
@@ -18,6 +18,15 @@ for (String cpu : targets) {
                 step([$class     : 'CopyArtifact',
                       projectName: SdkProject,
                       filter     : SdkArtifactFilter])
+                if (cpu == "cheri256") {
+                    step([$class     : 'CopyArtifact',
+                          projectName: "QEMU-CHERI-multi/CPU=cheri,label=linux/",
+                          filter     : "qemu-cheri-install/**"])
+                } else if (cpu == "cheri128") {
+                    step([$class     : 'CopyArtifact',
+                          projectName: "QEMU-CHERI-multi/CPU=cheri,label=linux/",
+                          filter     : "qemu-cheri-install/**"])
+                }
             }
 
             stage("Build image") {
