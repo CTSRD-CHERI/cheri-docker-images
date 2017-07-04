@@ -23,13 +23,20 @@ node("docker") {
         stage("Copy artifacts for ${cpu}") {
             def ISA = "vanilla"
             // def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
-            echo "Copying clang artifacts"
             if (cpu == "cheri128" || cpu == "cheri256") {
+                echo "Copying clang artifacts"
                 step([$class     : 'CopyArtifact',
                       projectName: "CLANG-LLVM-master/CPU=${cpu},label=linux/",
                       filter     : "*.tar.xz"])
+                def qemuCPU = cpu == "cheri128" ? "cheri128" : "cheri"
+                echo "Copying QEMU artifacts"
+                step([$class     : 'CopyArtifact',
+                      projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
+                      filter     : "qemu-cheri-install/**",
+                      target     : "QEMU-${cpu}"])
             } else {
                 sh "ln -sf cheri256-master-clang-llvm.tar.xz $cpu-master-clang-llvm.tar.xz"
+                sh "ln -sf QEMU-cheri256 QEMU-mips"
             }
             echo "Copying CheriBSD sysroot"
 
@@ -38,16 +45,8 @@ node("docker") {
                   filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz"])
 
             echo "Copying QEMU"
-            def qemuCPU
-            if (cpu == "cheri128") {
-                qemuCPU = "cheri128"
-            } else {
-                qemuCPU = "cheri"
-            }
-            step([$class     : 'CopyArtifact',
-                  projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
-                  filter     : "qemu-cheri-install/**",
-                  target     : "QEMU-${cpu}"])
+
+
         }
     }
     sh "ls -la"
