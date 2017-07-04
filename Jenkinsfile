@@ -7,22 +7,19 @@ node('docker') {
         checkout scm
     }
 
-//    def dockerBuildTasks = [:]
-//    // TODO: parallel build of cheri256/cheri128/mips
-//    for(String cpu : ["cheri256"]) {
-//        dockerBuildTasks["${cpu}"] = { }
-//    }
-//    parallel dockerBuildTasks
-
-
-    stage ("Build images") {
-        node("docker") {
+    def dockerBuildTasks = [:]
+    // TODO: parallel build of cheri256/cheri128/mips
+    for(String cpu : ["cheri256"]) {
+        dockerBuildTasks["${cpu}"] = {
             echo "CPU=${cpu}"
             sh "env | sort"
             /* This builds the actual image; synonymous to
              * docker build on the command line */
             app = docker.build("ctsrd/cheri-sdk-${cpu}")
         }
+    }
+    stage ("Build images") {
+        parallel dockerBuildTasks
     }
 
     stage('Test image') {
