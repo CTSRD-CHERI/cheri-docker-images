@@ -51,28 +51,27 @@ node("docker") {
         }
     }
     sh "ls -la"
-    if (false) {
-        for (String cpu : targets) {
-            def app
-            stage("Build ${cpu} image") {
-                sh "pwd"
-                echo "CPU=${cpu}"
-                env.CPU = "${cpu}"
+    for (String cpu : targets) {
+        def app
+        stage("Build ${cpu} image") {
+            sh "pwd"
+            echo "CPU=${cpu}"
+            env.CPU = "${cpu}"
 
-                // sh "env | sort"
-                /* This builds the actual image; synonymous to docker build on the command line */
-                app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
+            // sh "env | sort"
+            /* This builds the actual image; synonymous to docker build on the command line */
+            app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
+        }
+
+        stage("Test ${cpu} image") {
+            /* Ideally, we would run a test framework against our image.
+             * For this example, we're using a Volkswagen-type approach ;-) */
+            app.inside {
+                sh 'echo "Tests passed"'
+                sh "env | sort"
             }
-
-            stage("Test ${cpu} image") {
-                /* Ideally, we would run a test framework against our image.
-                 * For this example, we're using a Volkswagen-type approach ;-) */
-                app.inside {
-                    sh 'echo "Tests passed"'
-                    sh "env | sort"
-                }
-            }
-
+        }
+        if (false) {
             stage("Push ${cpu} image") {
                 /* Finally, we'll push the image with two tags:
                  * First, the incremental build number from Jenkins
