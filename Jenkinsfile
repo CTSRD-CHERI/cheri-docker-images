@@ -50,13 +50,15 @@ node("docker") {
     }
     sh "ls -la"
     sh "ls -la *-build"
-
     for (String cpu : targets) {
         def app
         stage("Build ${cpu} image") {
             dir("${cpu}-build") {
                 sh "ln -s ../Dockerfile ."
-                sh "pwd"
+                sh "ln -s ../binutils.tar.gz ."
+
+                sh "pwd; ls -la"
+                sh "cat Dockerfile"
                 echo "CPU=${cpu}"
                 env.CPU = "${cpu}"
 
@@ -89,6 +91,10 @@ node("docker") {
     }
 
     stage ("Cleaning up") {
-        deleteDir()
+        for (String cpu : targets) {
+            dir("${cpu}-build") {
+                deleteDir()
+            }
+        }
     }
 }
