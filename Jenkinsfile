@@ -54,10 +54,10 @@ node("docker") {
         def app
         stage("Build ${cpu} image") {
             dir("${cpu}-build") {
-                sh "rm -f Dockerfile; cp ../Dockerfile ."
-                // symlink the required archives to the build directory
-                sh "ln -sf ../binutils.tar.gz ."
-                sh "ln -sf ../${cmakeArchive} ."
+                // hard link the required archives and dockerfile to the build directory
+                sh "ln -f Dockerfile ."
+                sh "ln -f ../binutils.tar.gz ."
+                sh "ln -f ../${cmakeArchive} ."
 
                 sh "pwd; ls -la"
                 sh "cat Dockerfile"
@@ -102,5 +102,6 @@ node("docker") {
                 deleteDir()
             }
         }
+        sh "ls -la"
     }
 }
