@@ -9,7 +9,8 @@ node('docker') {
 
     def dockerBuildTasks = [:]
     // TODO: parallel build of cheri256/cheri128/mips
-    for(String cpu : ["cheri256", "cheri128", "mips"]) {
+    // for(String cpu : ["cheri256", "cheri128", "mips"]) {
+    for(String cpu : ["cheri256"]) {
         dockerBuildTasks["${cpu}"] = {
             echo "CPU=${cpu}"
             env.CPU = "${cpu}"
