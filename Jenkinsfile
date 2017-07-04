@@ -1,6 +1,6 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
-def targets = ["cheri256"]
+def targets = ["cheri256", "cheri128", "mips"]
 
 node("docker") {
     stage('Clone repository') {
@@ -41,7 +41,7 @@ node("docker") {
             app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
         }
 
-        stage('Test ${cpu} image') {
+        stage("Test ${cpu} image") {
             /* Ideally, we would run a test framework against our image.
                  * For this example, we're using a Volkswagen-type approach ;-) */
             app.inside {
@@ -50,7 +50,7 @@ node("docker") {
             }
         }
 
-        stage('Push ${cpu} image') {
+        stage("Push ${cpu} image") {
             /* Finally, we'll push the image with two tags:
                  * First, the incremental build number from Jenkins
                  * Second, the 'latest' tag.
