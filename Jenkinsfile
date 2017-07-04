@@ -21,40 +21,49 @@ node("docker") {
 
     for (String cpu : targets) {
         stage("Copy artifacts for ${cpu}") {
-            def ISA = "vanilla"
+            sh "mkdir -p ${cpu}-build"
+            echo "Copying CheriBSD sysroot"
+            step([$class     : 'CopyArtifact',
+                  projectName: "CHERIBSD-WORLD/ALLOC=jemalloc,CPU=${cpu},ISA=vanilla/",
+                  filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz",
+                  target     : "${cpu}-build"])
             // def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
             if (cpu == "cheri128" || cpu == "cheri256") {
                 echo "Copying clang artifacts"
                 step([$class     : 'CopyArtifact',
                       projectName: "CLANG-LLVM-master/CPU=${cpu},label=linux/",
-                      filter     : "*.tar.xz"])
+                      filter     : "*.tar.xz",
+                      target     : "${cpu}-build"])
                 def qemuCPU = cpu == "cheri128" ? "cheri128" : "cheri"
                 echo "Copying QEMU artifacts"
                 step([$class     : 'CopyArtifact',
                       projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
                       filter     : "qemu-cheri-install/**",
-                      target     : "QEMU-${cpu}"])
+                      target     : "${cpu}-build"])
             } else {
-                sh "ln -sf cheri256-master-clang-llvm.tar.xz $cpu-master-clang-llvm.tar.xz"
-                sh "ln -sf QEMU-cheri256 QEMU-mips"
+                dir("${cpu}-build") {
+                    sh "ln -sf ../cheri256-build/cheri256-master-clang-llvm.tar.xz ${cpu}-master-clang-llvm.tar.xz"
+                    sh "ln -sf ../cheri256-build/qemu-cheri-install ."
+                }
             }
-            echo "Copying CheriBSD sysroot"
-            step([$class     : 'CopyArtifact',
-                  projectName: "CHERIBSD-WORLD/ALLOC=jemalloc,CPU=${cpu},ISA=vanilla/",
-                  filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz"])
         }
     }
     sh "ls -la"
+    sh "ls -la *-build"
+
     for (String cpu : targets) {
         def app
         stage("Build ${cpu} image") {
-            sh "pwd"
-            echo "CPU=${cpu}"
-            env.CPU = "${cpu}"
+            dir("${cpu}-build") {
+                sh "ln -s ../Dockerfile ."
+                sh "pwd"
+                echo "CPU=${cpu}"
+                env.CPU = "${cpu}"
 
-            // sh "env | sort"
-            /* This builds the actual image; synonymous to docker build on the command line */
-            app = docker.build("ctsrd/cheri-sdk-${cpu}", "--build-arg target=${cpu} .")
+                // sh "env | sort"
+                /* This builds the actual image; synonymous to docker build on the command line */
+                app = docker.build("ctsrd/cheri-sdk-${cpu}", "-q --build-arg target=${cpu} .")
+            }
         }
 
         stage("Test ${cpu} image") {
