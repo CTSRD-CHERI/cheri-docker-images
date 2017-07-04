@@ -39,10 +39,10 @@ node("docker") {
 
             echo "Copying QEMU"
             def qemuCPU
-            if (cpu == "cheri256" || cpu == "mips") {
+            if (cpu == "cheri128") {
+                qemuCPU = "cheri128"
+            } else {
                 qemuCPU = "cheri"
-            } else if (cpu == "cheri128") {
-                qemuCPU == "cheri128"
             }
             step([$class     : 'CopyArtifact',
                   projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
