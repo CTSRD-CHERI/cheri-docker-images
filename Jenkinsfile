@@ -57,13 +57,14 @@ node("docker") {
             app.inside {
                 sh "env | sort"
                 // check that QEMU works
-                sh "qemu-system-cheri --help"
+                sh "qemu-system-cheri --help > /dev/null"
                 sh "cheri-unknown-freebsd-clang --version"
-                sh "ls /cheri-sdk/bin"
+                sh "ls -l /cheri-sdk/bin"
 
             }
         }
-        if (false) {
+        // TODO: make the pushing configurable
+        if (true) {
             stage("Push ${cpu} image") {
                 /* Finally, we'll push the image with two tags:
                  * First, the incremental build number from Jenkins
