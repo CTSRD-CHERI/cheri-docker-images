@@ -38,6 +38,7 @@ node("docker") {
                 sh "ln -sf QEMU-cheri QEMU-$cpu"
             }
         }
+        sh "chmod +x QEMU-*/bin/*"
         sh "ls -la"
         sh "ls -la *-build"
     }
