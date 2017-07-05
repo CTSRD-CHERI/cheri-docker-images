@@ -41,6 +41,7 @@ COPY ./QEMU-${target}/qemu-cheri-install /cheri-sdk
 # install clang SDK
 COPY ./${target}-master-clang-llvm.tar.xz /tmp
 RUN tar Jxf /tmp/${target}-master-clang-llvm.tar.xz --strip-components 1 -C /cheri-sdk \
+  && ln -s ld.lld /cheri-sdk/bin/ld && rm /usr/bin/ld \
   && rm /tmp/${target}-master-clang-llvm.tar.xz
 # install cheribsd sysroot
 COPY ./${target}-vanilla-jemalloc-cheribsd-world.tar.xz /tmp
