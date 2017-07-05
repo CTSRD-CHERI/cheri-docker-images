@@ -33,12 +33,12 @@ node("docker") {
                       projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
                       filter     : "qemu-cheri-install/**",
                       target     : "QEMU-$cpu"])
+                sh "chmod -v +x QEMU-$cpu/qemu-cheri-install/bin/*"
             } else {
                 sh "ln -sf cheri256-master-clang-llvm.tar.xz ${cpu}-master-clang-llvm.tar.xz"
                 sh "ln -sf QEMU-cheri QEMU-$cpu"
             }
         }
-        sh "chmod +x QEMU-*/bin/*"
         sh "ls -la"
         sh "ls -la *-build"
     }
