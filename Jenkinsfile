@@ -36,11 +36,10 @@ node("docker") {
                 sh "chmod -v +x QEMU-$cpu/qemu-cheri-install/bin/*"
             } else {
                 sh "ln -sf cheri256-master-clang-llvm.tar.xz ${cpu}-master-clang-llvm.tar.xz"
-                sh "ln -sf QEMU-cheri QEMU-$cpu"
+                sh "ln -sf QEMU-cheri256 QEMU-$cpu"
             }
         }
         sh "ls -la"
-        sh "ls -la *-build"
     }
 
     for (String cpu : targets) {
