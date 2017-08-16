@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get install -y libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debian libglib2.0
 
 # install CMake 3.9
-ADD ./cmake-3.9.0-rc5-Linux-x86_64.tar.gz /usr/local
+ADD ./cmake-3.9.1-Linux-x86_64.tar.gz /usr/local
 
 # install cheri binutils
 COPY ./binutils.tar.bz2 /tmp

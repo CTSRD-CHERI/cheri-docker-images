@@ -1,7 +1,7 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 def targets = ["cheri256", "cheri128", "mips"]
-def cmakeArchive = 'cmake-3.9.0-rc5-Linux-x86_64.tar.gz'
+def cmakeArchive = 'cmake-3.9.1-Linux-x86_64.tar.gz'
 
 node("docker") {
     stage('Clone repository') {
