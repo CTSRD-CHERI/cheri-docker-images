@@ -102,7 +102,6 @@ node("docker") {
 
     stage ("Cleaning up") {
         sh "ls -la"
-        deleteDir()
-        sh "rm -f *.tar.xz; rm -rf QEMU-* *-build"
+        sh "rm -f binutils.tar.bz; *-build"
     }
 }
