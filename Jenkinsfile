@@ -83,7 +83,6 @@ node("docker") {
         }
         sh "ls -la"
     }
-    def sdkTasks = [:]
     // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
     stage('Build SDK docker images') {
         parallel targets.collectEntries{

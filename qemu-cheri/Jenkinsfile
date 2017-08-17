@@ -1,0 +1,57 @@
+// https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
+properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
+def targets = ["cheri256", "cheri128", "cherimagic128"]
+
+def buildQEMUImage(String cpu) {
+    def app
+    stage("Build ${cpu} image") {
+        // sh "env | sort"
+        sh "pwd && ls -la"
+        sh "cp -f ../cheri-sdk/Dockerfile ../binutils.tar.bz2 ../${cmakeArchive} ."
+        app = docker.build("ctsrd/qemu-${cpu}", "-q --build-arg target=${cpu} .")
+        // Test that QEMU works:
+        app.inside {
+            sh "env | sort"
+            sh "which qemu-system-cheri && qemu-system-cheri --help > /dev/null"
+        }
+    }
+    stage("Push ${cpu} image") {
+        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+            app.push("${env.BUILD_NUMBER}")
+            app.push("latest")
+        }
+    }
+}
+
+node("docker") {
+    stage('Clone repository') {
+        /* Let's make sure we have the repository cloned to our workspace */
+        checkout scm
+        sh "pwd"
+    }
+    stage("Copy artifacts") {
+        for (String cpu : targets) {
+            echo "Copying QEMU ${cpu}"
+                // the cheri256 job is called cheri:
+                def qemuCPU = cpu == "cheri256" ? "cheri" : cpu
+                echo "Copying QEMU ${cpu} artifacts"
+                step([$class     : 'CopyArtifact',
+                          projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
+                          filter     : "qemu-cheri-install/**",
+                          target     : "QEMU-$cpu"])
+                    sh "chmod -v +x QEMU-$cpu/qemu-cheri-install/bin/*"
+        }
+        sh "ls -la"
+    }
+    // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
+    stage('Build SDK docker images') {
+        parallel targets.collectEntries{
+            [(it): { buildQEMUImage(it) }]
+        }
+    }
+
+    stage ("Cleaning up") {
+        sh "ls -la"
+        sh "rm -f binutils.tar.bz *-build"
+    }
+}
