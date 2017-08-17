@@ -2,14 +2,15 @@ FROM ubuntu:16.04
 ARG target=cheri256
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y  --no-install-recommends \
   binutils \
   git \
   python3-minimal \
   unzip \
-  zutils
-# QEMU needs these libraries
-RUN apt-get install -y libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debian libglib2.0-0 --no-install-recommends
+  zutils \
+  libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debian libglib2.0-0
+# last line is libraries needed by QEMU
+
 
 # install CMake 3.9
 ADD ./cmake-3.9.1-Linux-x86_64.tar.gz /usr/local
