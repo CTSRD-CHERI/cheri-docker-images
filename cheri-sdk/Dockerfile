@@ -3,7 +3,7 @@ ARG target=cheri256
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get update && apt-get install -y  --no-install-recommends \
-  binutils \
+  binutils make ninja-build \
   git \
   python3-minimal libpython3.5-stdlib \
   unzip bzip2 zip zutils xz-utils \
