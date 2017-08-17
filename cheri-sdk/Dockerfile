@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
   unzip \
   zutils
 # QEMU needs these libraries
-RUN apt-get install -y libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debian libglib2.0
+RUN apt-get install -y libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debian libglib2.0-0 --no-install-recommends
 
 # install CMake 3.9
 ADD ./cmake-3.9.1-Linux-x86_64.tar.gz /usr/local
