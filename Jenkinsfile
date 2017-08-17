@@ -16,27 +16,29 @@ node("docker") {
               projectName: "CHERI-binutils/label=linux/",
               filter     : "binutils.tar.bz2"])
         for (String cpu : targets) {
-            sh "mkdir -p ${cpu}-build"
-            echo "Copying CheriBSD ${cpu} sysroot"
-            step([$class     : 'CopyArtifact',
-                  projectName: "CHERIBSD-WORLD/ALLOC=jemalloc,CPU=${cpu},ISA=vanilla/",
-                  filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz"])
-            // def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
-            if (cpu == "cheri128" || cpu == "cheri256") {
-                echo "Copying clang ${cpu} artifacts"
+            dir ("sdk-${cpu}-build") {
+                echo "Copying CheriBSD ${cpu} sysroot"
                 step([$class     : 'CopyArtifact',
-                      projectName: "CLANG-LLVM-master/CPU=${cpu},label=linux/",
-                      filter     : "*.tar.xz"])
-                def qemuCPU = cpu == "cheri128" ? "cheri128" : "cheri"
-                echo "Copying QEMU ${cpu} artifacts"
-                step([$class     : 'CopyArtifact',
-                      projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
-                      filter     : "qemu-cheri-install/**",
-                      target     : "QEMU-$cpu"])
-                sh "chmod -v +x QEMU-$cpu/qemu-cheri-install/bin/*"
-            } else {
-                sh "ln -sf cheri256-master-clang-llvm.tar.xz ${cpu}-master-clang-llvm.tar.xz"
-                sh "ln -sf QEMU-cheri256 QEMU-$cpu"
+                      projectName: "CHERIBSD-WORLD/ALLOC=jemalloc,CPU=${cpu},ISA=vanilla/",
+                      filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz"])
+                // def SdkProject = "CHERI-SDK/ALLOC=jemalloc,CPU=${cpu},ISA=${ISA},label=linux/"
+                if (cpu == "cheri128" || cpu == "cheri256") {
+                    echo "Copying clang ${cpu} artifacts"
+                    step([$class     : 'CopyArtifact',
+                          projectName: "CLANG-LLVM-master/CPU=${cpu},label=linux/",
+                          filter     : "*.tar.xz"])
+                    def qemuCPU = cpu == "cheri128" ? "cheri128" : "cheri"
+                    echo "Copying QEMU ${cpu} artifacts"
+                    step([$class     : 'CopyArtifact',
+                          projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
+                          filter     : "qemu-cheri-install/**",
+                          target     : "QEMU-$cpu"])
+                    sh "chmod -v +x QEMU-$cpu/qemu-cheri-install/bin/*"
+                } else {
+                    sh "ln -sf ../sdk-cheri256-build/cheri256-master-clang-llvm.tar.xz ${cpu}-master-clang-llvm.tar.xz"
+                    sh "ln -sf ../sdk-cheri256-build/QEMU-cheri256 QEMU-$cpu"
+                }
+                sh "pwd && ls -la"
             }
         }
         sh "ls -la"
@@ -46,10 +48,13 @@ node("docker") {
         def app
         stage("Build ${cpu} image") {
             // sh "env | sort"
-            // dir('cheri-sdk') {
+            sh "pwd && ls -la"
+            dir ("sdk-${cpu}-build") {
+                sh "cp -f ../cheri-sdk/Dockerfile ../binutils.tar.bz2 ../${cmakeArchive} ."
+                sh "pwd && ls -la"
                 /* This builds the actual image; synonymous to docker build on the command line */
-                app = docker.build("ctsrd/cheri-sdk-${cpu}", "-q --build-arg target=${cpu} cheri-sdk")
-            // }
+                app = docker.build("ctsrd/cheri-sdk-${cpu}", "-q --build-arg target=${cpu} .")
+            }
         }
 
         stage("Test ${cpu} image") {
