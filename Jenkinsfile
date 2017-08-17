@@ -76,7 +76,7 @@ node("docker") {
                     sh "chmod -v +x QEMU-$cpu/qemu-cheri-install/bin/*"
                 } else {
                     sh "cp -f ../sdk-cheri256-build/cheri256-master-clang-llvm.tar.xz ${cpu}-master-clang-llvm.tar.xz"
-                    sh "cp -f ../sdk-cheri256-build/QEMU-cheri256 QEMU-$cpu"
+                    sh "cp -Rf ../sdk-cheri256-build/QEMU-cheri256 QEMU-$cpu"
                 }
                 sh "pwd && ls -la"
             }
