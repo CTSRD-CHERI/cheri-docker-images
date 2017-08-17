@@ -84,11 +84,17 @@ node("docker") {
         sh "ls -la"
     }
     def sdkTasks = [:]
-    for (String cpu : targets) {
-        sdkTasks[cpu] = {
-           def cpuCaptured = cpu;
-           buildImage(cpuCaptured)
-        }
+//    for (String cpu : targets) {
+//        // http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
+//        String cpuCaptured = cpu
+//        sdkTasks[cpu] = {
+//           buildImage(cpuCaptured)
+//        }
+//    }
+
+    // using .each seams to be the easiest way to work around the stupid groovy for loop capturing semantics
+    targets.each { cpu ->
+        sdkTasks[cpu] = { buildImage(cpu) }
     }
     stage('Build SDK docker images') {
         parallel sdkTasks
