@@ -3,7 +3,7 @@ properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 def targets = ["cheri256", "cheri128", "mips"]
 cmakeArchive = 'cmake-3.9.1-Linux-x86_64.tar.gz'
 
-def buildImage(String cpu) {
+def buildSDKImage(String cpu) {
     def app
     stage("Build ${cpu} image") {
         // sh "env | sort"
@@ -84,20 +84,11 @@ node("docker") {
         sh "ls -la"
     }
     def sdkTasks = [:]
-//    for (String cpu : targets) {
-//        // http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
-//        String cpuCaptured = cpu
-//        sdkTasks[cpu] = {
-//           buildImage(cpuCaptured)
-//        }
-//    }
-
-    // using .each seams to be the easiest way to work around the stupid groovy for loop capturing semantics
-    targets.each { cpu ->
-        sdkTasks[cpu] = { buildImage(cpu) }
-    }
+    // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
     stage('Build SDK docker images') {
-        parallel sdkTasks
+        parallel targets.collectEntries{
+            [(it): { buildSDKImage(it) }]
+        }
     }
 
     stage ("Cleaning up") {
