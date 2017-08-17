@@ -7,7 +7,6 @@ def buildQEMUImage(String cpu) {
     stage("Build ${cpu} image") {
         // sh "env | sort"
         sh "pwd && ls -la"
-        sh "cp -f ../cheri-sdk/Dockerfile ../binutils.tar.bz2 ../${cmakeArchive} ."
         app = docker.build("ctsrd/qemu-${cpu}", "-q --build-arg target=${cpu} .")
         // Test that QEMU works:
         app.inside {
@@ -30,28 +29,35 @@ node("docker") {
         sh "pwd"
     }
     stage("Copy artifacts") {
-        for (String cpu : targets) {
-            echo "Copying QEMU ${cpu}"
-                // the cheri256 job is called cheri:
-                def qemuCPU = cpu == "cheri256" ? "cheri" : cpu
-                echo "Copying QEMU ${cpu} artifacts"
-                step([$class     : 'CopyArtifact',
-                          projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
-                          filter     : "qemu-cheri-install/**",
-                          target     : "QEMU-$cpu"])
+        dir ('qemu-cheri') {
+            for (String cpu : targets) {
+                echo "Copying QEMU ${cpu}"
+                    // the cheri256 job is called cheri:
+                    def qemuCPU = cpu == "cheri256" ? "cheri" : cpu
+                    echo "Copying QEMU ${cpu} artifacts"
+                    step([$class     : 'CopyArtifact',
+                              projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
+                              filter     : "qemu-cheri-install/**",
+                              target     : "QEMU-$cpu"])
                     sh "chmod -v +x QEMU-$cpu/qemu-cheri-install/bin/*"
+            }
+            sh "ls -la"
         }
-        sh "ls -la"
     }
     // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
     stage('Build SDK docker images') {
-        parallel targets.collectEntries{
-            [(it): { buildQEMUImage(it) }]
+        parallel targets.collectEntries {
+            [(it): {
+                dir ('qemu-cheri') {
+                    buildQEMUImage(it)
+                }
+            }]
         }
     }
 
     stage ("Cleaning up") {
         sh "ls -la"
-        sh "rm -f binutils.tar.bz *-build"
+        sh "rm -f qemu-cheri/QEMU*"
+        sh "ls -laR"
     }
 }
