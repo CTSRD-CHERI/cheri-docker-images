@@ -57,7 +57,7 @@ node("docker") {
 
     stage ("Cleaning up") {
         sh "ls -la"
-        sh "rm -f qemu-cheri/QEMU*"
+        sh "rm -rf qemu-cheri/QEMU*"
         sh "ls -laR"
     }
 }
