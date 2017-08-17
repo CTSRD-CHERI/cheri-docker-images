@@ -93,6 +93,6 @@ node("docker") {
 
     stage ("Cleaning up") {
         sh "ls -la"
-        sh "rm -f binutils.tar.bz; *-build"
+        sh "rm -f binutils.tar.bz *-build"
     }
 }
