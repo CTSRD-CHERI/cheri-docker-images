@@ -5,6 +5,7 @@ LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 RUN apt-get update && apt-get install -y  --no-install-recommends \
   binutils make ninja-build \
   autoconf automake autotools-dev libsigsegv2 m4 \
+  flex bison \
   git \
   python3-minimal libpython3.5-stdlib \
   unzip bzip2 zip zutils xz-utils \
