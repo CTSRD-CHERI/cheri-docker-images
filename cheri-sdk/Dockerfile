@@ -22,7 +22,7 @@ RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
   && (cd /cheri-sdk/bin \
       && mv mips64-ld mips64-ld.bfd \
       && rm mips64-ar mips64-c++filt mips64-coffdump mips64-nlmconv mips64-ranlib mips64-srconv mips64-sysdump \
-      && for TOOL in addr2line as ld.bfd nm objcopy objdump readelf size strings strip; do \
+      && for TOOL in addr2line ar as ld.bfd nm objcopy objdump readelf size strings strip; do \
         ln -fs mips64-$TOOL cheri-unknown-freebsd-$TOOL ; \
         ln -fs mips64-$TOOL mips4-unknown-freebsd-$TOOL ;\
         ln -fs mips64-$TOOL mips64-unknown-freebsd-$TOOL ; \
