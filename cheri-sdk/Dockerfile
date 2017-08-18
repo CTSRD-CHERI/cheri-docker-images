@@ -40,11 +40,20 @@ RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
 #  && rm /tmp/qemu-${target}-install.zip && rm -r /tmp/qemu-cheri-install
 COPY ./QEMU-${target}/qemu-cheri-install /cheri-sdk
 
-# install clang SDK
+# install clang SDK (and delete some unnecessary files as they are really big statically linked)
 COPY ./${target}-master-clang-llvm.tar.xz /tmp
 RUN tar Jxf /tmp/${target}-master-clang-llvm.tar.xz --strip-components 1 -C /cheri-sdk \
   && ln -s ld.lld /cheri-sdk/bin/ld && rm /usr/bin/ld \
-  && rm /tmp/${target}-master-clang-llvm.tar.xz
+  && rm /tmp/${target}-master-clang-llvm.tar.xz \
+  && (cd /cheri-sdk/bin && rm -v clang-check opt llc lli llvm-lto2 llvm-lto llvm-c-test \
+         llvm-dsymutil llvm-dwp llvm-nm llvm-ar llvm-rtdyld *-llc \
+         llvm-extract llvm-xray llvm-split llvm-cov llvm-symbolizer llvm-dwarfdump \
+         llvm-link llvm-stress llvm-cxxdump llvm-cvtres llvm-cat llvm-as \
+         llvm-diff llvm-modextract llvm-tblgen llvm-dis llvm-pdbdump llvm-profdata \
+         llvm-opt-report llvm-bcanalyzer llvm-mcmarkup llvm-lib llvm-ranlib \
+         verify-uselistorder sanstats clang-offload-bundler c-index-test \
+         clang-import-test bugpoint sancov obj2yaml yaml2obj)
+ 
 # install cheribsd sysroot
 COPY ./${target}-vanilla-jemalloc-cheribsd-world.tar.xz /tmp
 # --exclude=bin so that we don't extract the freebsd binaries
