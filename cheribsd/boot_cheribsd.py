@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 # -
 # Copyright (c) 2016-2017 SRI International
 # All rights reserved.
@@ -34,13 +35,15 @@
 import argparse
 import os
 import pexpect
+import signal
 import subprocess
 import sys
 import time
 from pathlib import Path
 
-ALMOST_BOOTED = b"Starting background file system checks in 60 seconds"
+STARTING_INIT = b"start_init: trying /sbin/init"
 BOOT_FAILURE = b"Enter full pathname of shell or RETURN for /bin/sh"
+SHELL_OPEN = b"exec /bin/sh"
 LOGIN = b"login:"
 PROMPT = b"root@beri1:"
 STOPPED = b"Stopped at"
@@ -56,30 +59,53 @@ def failure(*args, **kwargs):
     sys.exit(1)
 
 
+def decompress(archive: Path, force_decompression: bool, *, cmd=None) -> Path:
+    result = archive.with_suffix("")
+    if result.exists():
+        if not force_decompression:
+            return result
+        result.unlink()
+    print("Extracting", archive)
+    subprocess.check_call(cmd + [str(archive)])
+    return result
+
 def maybe_decompress(path: Path, force_decompression: bool) -> Path:
     # drop the suffix and then try decompressing
-    if path.exists() and not force_decompression:
-        return path
-    elif path.with_suffix(path.suffix + ".bz2").exists():
-        print("Extracting", path.with_suffix(path.suffix + ".bz2"))
-        subprocess.check_call(["bunzip2", "-k", str(path.with_suffix(path.suffix + ".bz2"))])
-    elif path.with_suffix(path.suffix + ".xz").exists():
-        print("Extracting", path.with_suffix(path.suffix + ".xz"))
-        subprocess.check_call(["xz", "-d", "-k", "-v", str(path.with_suffix(path.suffix + ".xz"))])
+    def bunzip(archive):
+        return decompress(archive, force_decompression, cmd=["bunzip2", "-k", "-v"])
 
-    if not path.exists():
+    def unxz(archive):
+        return decompress(archive, force_decompression, cmd=["xz", "-d", "-k", "-v"])
+
+    if path.suffix == ".bz2":
+        return bunzip(path)
+    elif path.suffix == ".xz":
+        return unxz(path)
+    # try adding the arhive suffix suffix
+    elif path.with_suffix(path.suffix + ".bz2").exists():
+        return bunzip(path.with_suffix(path.suffix + ".bz2"))
+    elif path.with_suffix(path.suffix + ".xz").exists():
+        return unxz(path.with_suffix(path.suffix + ".xz"))
+    elif not path.exists():
         sys.exit("Could not find " + str(path))
+    assert path.exists(), path
     return path
 
 
 def main():
-    global ALMOST_BOOTED, LOGIN, PROMPT
     parser = argparse.ArgumentParser()
     parser.add_argument("--qemu-cmd", default="qemu-system-cheri")
     parser.add_argument("--kernel", default="/usr/local/share/cheribsd/cheribsd-malta64-kernel")
     parser.add_argument("--disk-image", default="/usr/local/share/cheribsd/cheribsd-full.img")
     parser.add_argument("--reuse-image", action="store_true")
     parser.add_argument("--interact", "-i", action="store_true")
+    try:
+        # noinspection PyUnresolvedReferences
+        import argcomplete
+        argcomplete.autocomplete(parser)
+    except ImportError:
+        pass
+
     args = parser.parse_args()
     force_decompression = not args.reuse_image  # type: bool
     qemu = args.qemu_cmd
@@ -87,32 +113,46 @@ def main():
     diskimg = str(maybe_decompress(Path(args.disk_image), force_decompression))
 
     child = pexpect.spawn(qemu, ["-M", "malta", "-kernel", kernel, "-hda", diskimg, "-m", "2048", "-nographic"],
-                          logfile=sys.stdout.buffer, echo=False, )
-    i = child.expect([pexpect.TIMEOUT, ALMOST_BOOTED, BOOT_FAILURE], timeout=15 * 60)
+                          logfile=sys.stdout.buffer, echo=False)
+    # ignore SIGINT for the python code, the child should still receive it
+    # signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    i = child.expect([pexpect.TIMEOUT, STARTING_INIT, BOOT_FAILURE], timeout=5 * 60)
     if i == 0:  # Timeout
         failure("timeout before booted: ", str(child))
-        sys.exit(1)
-    elif i == 0:  # start up scripts failed
+    elif i == 2:  # start up scripts failed
         failure("start up scripts failed to run")
-    success("===> nearly booted")
+    success("===> init running")
 
-    i = child.expect([pexpect.TIMEOUT, LOGIN], timeout=30)
+    i = child.expect([pexpect.TIMEOUT, LOGIN, SHELL_OPEN, BOOT_FAILURE, PANIC, STOPPED], timeout=15 * 60)
     if i == 0:  # Timeout
         failure("timeout awaiting login prompt: ", str(child))
-    success("===> got login prompt")
-
-    child.sendline(b"root")
-    i = child.expect([pexpect.TIMEOUT, PROMPT], timeout=60)
-    if i == 0:  # Timeout
-        failure("timeout awaiting command prompt ", str(child))
-    success("===> got command prompt")
+    elif i == 1:
+        success("===> got login prompt")
+        child.sendline(b"root")
+        i = child.expect([pexpect.TIMEOUT, PROMPT], timeout=60)
+        if i == 0:  # Timeout
+            failure("timeout awaiting command prompt ", str(child))
+        success("===> got command prompt")
+    elif i == 2:
+        # shell started from /etc/rc:
+        child.expect_exact("#", timeout=30)
+        success("===> /etc/rc completed, got command prompt")
+    else:
+        failure("error during boot login prompt: ", str(child))
 
     # TODO: run the test script here, scp files over, etc.
 
     if args.interact:
         # interact print all in and output -> clear logfile
         child.logfile = None
-        child.interact()
+        while True:
+            try:
+                if not child.isalive():
+                    break
+                child.interact()
+            except KeyboardInterrupt:
+                continue
 
 
 if __name__ == "__main__":
