@@ -1,5 +1,4 @@
-FROM ctsrd/qemu-@@CPU@@:latest
-cheri256
+FROM ctsrd/qemu-cheri256:latest
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
