@@ -32,8 +32,8 @@ def buildCheriBSDImage(String cpu, String ABI) {
     def app
     stage("Build ${cpu}-${ABI} image") {
         sh 'pwd && cp -f ../cheribsd/Dockerfile ../cheribsd/boot_cheribsd.py . && ls -la'
-        sh "perl -pi -e 's/\$\{CPU\}/cheri256/g' Dockerfile"
-        app = docker.build("ctsrd/${cpu}-cheribsd-${ABI}", "-q --build-arg target=${cpu} .")
+        sh 'perl -pi -e \'s/\\$\\{CPU\\}/'  + cpu + '/g\' Dockerfile'
+        app = docker.build("ctsrd/${cpu}-cheribsd-${ABI}", "-q .")
     }
     stage("Push ${cpu}-${ABI} image") {
         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
