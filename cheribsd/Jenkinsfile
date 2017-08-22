@@ -17,7 +17,7 @@ def buildCheriBSDImage(String cpu, String ABI) {
         } else {
             CPU_PARAM = cpu
             BASE_ABI = ABI == 'hybrid' ? 'n64' : 'cheriabi_static'
-            kernelPrefix = cpu == 'cheri256' ? 'cheribsd-cheri' : 'cheribsd-cheri128'
+            kernelPrefix = cpu == 'cheri256' ? 'cheribsd-cheri' : 'cheribsd128-cheri128'
             imagePrefix = cpu == 'cheri256' ? 'cheribsd' : 'cheribsd128'
         }
         echo 'Copying CHERIBSD artifacts'
