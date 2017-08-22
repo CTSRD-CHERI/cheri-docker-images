@@ -29,12 +29,10 @@ def buildCheriBSDImage(String cpu, String ABI) {
           filter     : "ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2",
           target     : "cheribsd-malta64-kernel.bz2"])
     pwd
-    sh "ls -la"
     def app
     stage("Build ${cpu}-${ABI} image") {
-        // sh "env | sort"
         sh 'pwd && cp -f ../cheribsd/Dockerfile ../cheribsd/boot_cheribsd.py . && ls -la'
-        sed "sed -i '' 's/@@CPU@@/${cpu}/g' Dockerfile"
+        sh "sed -i '' 's/@@CPU@@/${cpu}/g' Dockerfile"
         app = docker.build("ctsrd/${cpu}-cheribsd-${ABI}", "-q --build-arg target=${cpu} .")
     }
     stage("Push ${cpu}-${ABI} image") {
