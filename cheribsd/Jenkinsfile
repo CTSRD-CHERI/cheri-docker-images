@@ -22,11 +22,11 @@ def buildCheriBSDImage(String cpu, String ABI) {
     echo 'Copying CHERIBSD artifacts'
     step([$class     : 'CopyArtifact',
           projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
-          filter     : "${imagePrefix}-full.img.xz",
+          filter     : "ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-full.img.xz",
           target     : "cheribsd-full.img.xz"])
     step([$class     : 'CopyArtifact',
           projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
-          filter     : "${kernelPrefix}-malta64-kernel.bz2",
+          filter     : "ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2",
           target     : "cheribsd-malta64-kernel.bz2"])
     pwd
     sh "ls -la"
