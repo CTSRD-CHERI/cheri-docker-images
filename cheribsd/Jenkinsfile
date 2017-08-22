@@ -2,12 +2,13 @@
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 def targets = [
                   ['cheri256', 'mips'], ['cheri256', 'hybrid'], ['cheri256', 'cheriabi-static'],
-                  ['cher128', 'mips'], ['cheri128', 'hybrid'], ['cheri128', 'cheriabi-static'],
+                  ['cheri128', 'mips'], ['cheri128', 'hybrid'], ['cheri128', 'cheriabi-static'],
                   // TODO: build magic 128?
               ]
 
 def buildCheriBSDImage(String cpu, String ABI) {
-    stage("Build ${cpu}-${ABI} image") {
+    def app
+    stage("Copy ${cpu}-${ABI} artifact") {
         // Handle the diverging names of the cheribsd job
         if (ABI == 'mips') {
             CPU_PARAM = 'mips'
@@ -29,8 +30,8 @@ def buildCheriBSDImage(String cpu, String ABI) {
               projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
               filter     : "ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2",
               target     : "cheribsd-malta64-kernel.bz2"])
-        pwd
-        def app
+    }
+    stage("Build ${cpu}-${ABI} image") {
         sh 'pwd && cp -f ../cheribsd/Dockerfile ../cheribsd/boot_cheribsd.py . && ls -la'
         sh 'perl -pi -e \'s/\\$\\{CPU\\}/'  + cpu + '/g\' Dockerfile'
         app = docker.build("ctsrd/${cpu}-cheribsd-${ABI}", "-q .")
