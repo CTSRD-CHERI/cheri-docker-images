@@ -7,30 +7,30 @@ def targets = [
               ]
 
 def buildCheriBSDImage(String cpu, String ABI) {
-    // Handle the diverging names of the cheribsd job
-    if (ABI == 'mips') {
-        CPU_PARAM = 'mips'
-        BASE_ABI = 'n64'
-        kernelPrefix = 'freebsd'
-        imagePrefix = 'freebsd'
-    } else {
-        CPU_PARAM = cpu
-        BASE_ABI = ABI == 'hybrid' ? 'n64' : 'cheriabi_static'
-        kernelPrefix = cpu == 'cheri256' ? 'cheribsd-cheri' : 'cheribsd-cheri128'
-        imagePrefix = cpu == 'cheri256' ? 'cheribsd' : 'cheribsd128'
-    }
-    echo 'Copying CHERIBSD artifacts'
-    step([$class     : 'CopyArtifact',
-          projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
-          filter     : "ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-full.img.xz",
-          target     : "cheribsd-full.img.xz"])
-    step([$class     : 'CopyArtifact',
-          projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
-          filter     : "ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2",
-          target     : "cheribsd-malta64-kernel.bz2"])
-    pwd
-    def app
     stage("Build ${cpu}-${ABI} image") {
+        // Handle the diverging names of the cheribsd job
+        if (ABI == 'mips') {
+            CPU_PARAM = 'mips'
+            BASE_ABI = 'n64'
+            kernelPrefix = 'freebsd'
+            imagePrefix = 'freebsd'
+        } else {
+            CPU_PARAM = cpu
+            BASE_ABI = ABI == 'hybrid' ? 'n64' : 'cheriabi_static'
+            kernelPrefix = cpu == 'cheri256' ? 'cheribsd-cheri' : 'cheribsd-cheri128'
+            imagePrefix = cpu == 'cheri256' ? 'cheribsd' : 'cheribsd128'
+        }
+        echo 'Copying CHERIBSD artifacts'
+        step([$class     : 'CopyArtifact',
+              projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
+              filter     : "ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-full.img.xz",
+              target     : "cheribsd-full.img.xz"])
+        step([$class     : 'CopyArtifact',
+              projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
+              filter     : "ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2",
+              target     : "cheribsd-malta64-kernel.bz2"])
+        pwd
+        def app
         sh 'pwd && cp -f ../cheribsd/Dockerfile ../cheribsd/boot_cheribsd.py . && ls -la'
         sh 'perl -pi -e \'s/\\$\\{CPU\\}/'  + cpu + '/g\' Dockerfile'
         app = docker.build("ctsrd/${cpu}-cheribsd-${ABI}", "-q .")
