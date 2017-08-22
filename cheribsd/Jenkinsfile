@@ -1,9 +1,9 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 def targets = [
-                  ['cheri256', 'mips], ['cheri256', 'hybrid'], ['cheri256', 'cheriabi-static'],
-                  ['cher128', 'mips], ['cheri128', 'hybrid'], ['cheri128', 'cheriabi-static'],
-                  # TODO: build magic 128?
+                  ['cheri256', 'mips'], ['cheri256', 'hybrid'], ['cheri256', 'cheriabi-static'],
+                  ['cher128', 'mips'], ['cheri128', 'hybrid'], ['cheri128', 'cheriabi-static'],
+                  // TODO: build magic 128?
               ]
 
 def buildCheriBSDImage(String cpu, String ABI) {
