@@ -1,5 +1,5 @@
-ARG target=cheri256
-FROM ctsrd/qemu-${target}:latest
+FROM ctsrd/qemu-@@CPU@@:latest
+cheri256
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \

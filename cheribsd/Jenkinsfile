@@ -34,6 +34,7 @@ def buildCheriBSDImage(String cpu, String ABI) {
     stage("Build ${cpu}-${ABI} image") {
         // sh "env | sort"
         sh 'pwd && cp -f ../cheribsd/Dockerfile ../cheribsd/boot_cheribsd.py . && ls -la'
+        sed "sed -i '' 's/@@CPU@@/${cpu}/g' Dockerfile"
         app = docker.build("ctsrd/${cpu}-cheribsd-${ABI}", "-q --build-arg target=${cpu} .")
     }
     stage("Push ${cpu}-${ABI} image") {
