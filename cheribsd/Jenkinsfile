@@ -1,0 +1,70 @@
+// https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
+properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
+def targets = [
+                  ['cheri256', 'mips], ['cheri256', 'hybrid'], ['cheri256', 'cheriabi-static'],
+                  ['cher128', 'mips], ['cheri128', 'hybrid'], ['cheri128', 'cheriabi-static'],
+                  # TODO: build magic 128?
+              ]
+
+def buildCheriBSDImage(String cpu, String ABI) {
+    //
+    // the cheri256 job is called cheri:
+    if (ABI == 'mips') {
+        CPU_PARAM = 'mips'
+        BASE_ABI = 'n64'
+        kernelPrefix = 'freebsd'
+        imagePrefix = 'freebsd'
+    } else {
+        CPU_PARAM = cpu
+        BASE_ABI = ABI == 'hybrid' ? 'n64' : 'cheriabi_static'
+        kernelPrefix = cpu == 'cheri256' ? 'cheribsd-cheri' : 'cheribsd-cheri128'
+        imagePrefix = cpu == 'cheri256' ? 'cheribsd' : 'cheribsd128'
+    }
+    echo 'Copying CHERIBSD artifacts'
+    step([$class     : 'CopyArtifact',
+          projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
+          filter     : "${imagePrefix}-full.img.xz",
+          target     : "cheribsd-full.img.xz"])
+    step([$class     : 'CopyArtifact',
+          projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
+          filter     : "${kernelPrefix}-malta64-kernel.bz2",
+          target     : "cheribsd-malta64-kernel.bz2"])
+    pwd
+    sh "ls -la"
+    def app
+    stage("Build ${cpu}-${ABI} image") {
+        // sh "env | sort"
+        sh 'pwd && cp -f ../cheribsd/Dockerfile ../cheribsd/boot_cheribsd.py . && ls -la'
+        app = docker.build("ctsrd/${cpu}-cheribsd-${ABI}", "-q --build-arg target=${cpu} .")
+    }
+    stage("Push ${cpu}-${ABI} image") {
+        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+            app.push("${env.BUILD_NUMBER}")
+            app.push("latest")
+        }
+    }
+}
+
+node("docker") {
+    stage('Clone repository') {
+        /* Let's make sure we have the repository cloned to our workspace */
+        checkout scm
+        sh "pwd"
+    }
+    // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
+    stage('Build SDK docker images') {
+        parallel targets.collectEntries {
+            [(it[0] + '-' + it[1]): {
+                dir ('build-cheri') {
+                    buildQEMUImage(it[0], it[1])
+                }
+            }]
+        }
+    }
+
+    stage ("Cleaning up") {
+        pwd
+        sh "rm -rf build-*"
+        sh "ls -laR"
+    }
+}
