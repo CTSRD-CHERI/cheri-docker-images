@@ -100,7 +100,7 @@ def maybe_decompress(path: Path, force_decompression: bool) -> Path:
 def setup_ssh(qemu: pexpect.spawn, pubkey: Path):
     qemu.sendline("mkdir -p /root/.ssh")
     qemu.expect_exact("#")
-    contents = pubkey.read_text(encoding="utf-8")
+    contents = pubkey.read_text(encoding="utf-8").strip()
     qemu.sendline("echo " + shlex.quote(contents) + " >> /root/.ssh/authorized_keys")
     qemu.expect_exact("#")
     qemu.sendline("echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config")
