@@ -20,7 +20,7 @@ ADD ./cmake-3.9.1-Linux-x86_64.tar.gz /usr/local
 COPY ./binutils.tar.bz2 /tmp
 RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
   && mkdir -p /cheri-sdk/bin \
-  && (cd /cheri-sdk/bin && mv mips64-ld mips64-ld.bfd \
+  && (cd /cheri-sdk/bin && mv /tmp/binutils/bin/mips64-ld /tmp/binutils/bin/mips64-ld.bfd \
       && for TOOL in ld.bfd objdump; do \
         cp -fv /tmp/binutils/bin/mips64-$TOOL $TOOL \
         ln -fs $TOOL cheri-unknown-freebsd-$TOOL ; \
