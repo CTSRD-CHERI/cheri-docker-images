@@ -132,39 +132,41 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
     child.logfile_read = sys.stdout.buffer
     # ignore SIGINT for the python code, the child should still receive it
     # signal.signal(signal.SIGINT, signal.SIG_IGN)
+    try:
+        i = child.expect([pexpect.TIMEOUT, STARTING_INIT, BOOT_FAILURE, PANIC_KDB, PANIC, STOPPED], timeout=5 * 60)
+        if i == 0:  # Timeout
+            failure("timeout before booted: ", str(child))
+        elif i != 1:  # start up scripts failed
+            failure("start up scripts failed to run")
+        success("===> init running")
 
-    i = child.expect([pexpect.TIMEOUT, STARTING_INIT, BOOT_FAILURE, PANIC_KDB, PANIC, STOPPED], timeout=5 * 60)
-    if i == 0:  # Timeout
-        failure("timeout before booted: ", str(child))
-    elif i != 1:  # start up scripts failed
-        failure("start up scripts failed to run")
-    success("===> init running")
-
-    i = child.expect([pexpect.TIMEOUT, LOGIN, SHELL_OPEN, BOOT_FAILURE, PANIC, STOPPED], timeout=15 * 60)
-    if i == 0:  # Timeout
-        failure("timeout awaiting login prompt: ", str(child))
-    elif i == 1:
-        success("===> got login prompt")
-        child.sendline(b"root")
-        i = child.expect([pexpect.TIMEOUT, PROMPT], timeout=60)
+        i = child.expect([pexpect.TIMEOUT, LOGIN, SHELL_OPEN, BOOT_FAILURE, PANIC, STOPPED], timeout=15 * 60)
         if i == 0:  # Timeout
-            failure("timeout awaiting command prompt ", str(child))
-        success("===> got command prompt")
-    elif i == 2:
-        # shell started from /etc/rc:
-        child.expect_exact("#", timeout=30)
-        success("===> /etc/rc completed, got command prompt")
-        # set up network (bluehive image tries to use atse0)
-        child.sendline("ifconfig le0 up && dhclient le0")
-        i = child.expect([pexpect.TIMEOUT, b"DHCPACK from 10.0.2.2"], timeout=120)
-        if i == 0:  # Timeout
-            failure("timeout awaiting dhclient ", str(child))
-        i = child.expect([pexpect.TIMEOUT, b"bound to"], timeout=120)
-        if i == 0:  # Timeout
-            failure("timeout awaiting dhclient ", str(child))
-        child.expect_exact("#", timeout=30)
-    else:
-        failure("error during boot login prompt: ", str(child))
+            failure("timeout awaiting login prompt: ", str(child))
+        elif i == 1:
+            success("===> got login prompt")
+            child.sendline(b"root")
+            i = child.expect([pexpect.TIMEOUT, PROMPT], timeout=60)
+            if i == 0:  # Timeout
+                failure("timeout awaiting command prompt ", str(child))
+            success("===> got command prompt")
+        elif i == 2:
+            # shell started from /etc/rc:
+            child.expect_exact("#", timeout=30)
+            success("===> /etc/rc completed, got command prompt")
+            # set up network (bluehive image tries to use atse0)
+            child.sendline("ifconfig le0 up && dhclient le0")
+            i = child.expect([pexpect.TIMEOUT, b"DHCPACK from 10.0.2.2"], timeout=120)
+            if i == 0:  # Timeout
+                failure("timeout awaiting dhclient ", str(child))
+            i = child.expect([pexpect.TIMEOUT, b"bound to"], timeout=120)
+            if i == 0:  # Timeout
+                failure("timeout awaiting dhclient ", str(child))
+            child.expect_exact("#", timeout=30)
+        else:
+            failure("error during boot login prompt: ", str(child))
+    except KeyboardInterrupt:
+        failure("Keyboard interrupt during boot", exit=False)
     return child
 
 
