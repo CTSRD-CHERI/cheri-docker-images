@@ -2,7 +2,7 @@ FROM ctsrd/qemu-cheri256:latest
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        python3-minimal libpython3.5-stdlib python3-pip \
+        python3-minimal libpython3.5-stdlib python3-pip bzip2 xz-utils \
     && mkdir /usr/local/share/cheribsd && chmod 777 /usr/local/share/cheribsd \
     && pip3 install pexpect
 
