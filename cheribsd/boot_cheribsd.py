@@ -202,6 +202,8 @@ def main():
     # validate args:
     test_archive = args.test_archive  # type: str
     if test_archive:
+        if not Path(args.ssh_key).exists():
+            failure("SSH key missing: ", args.ssh_key)
         if not Path(test_archive).exists():
             failure("Test archive is missing: ", test_archive)
         if not test_archive.endswith(".tar.xz"):
