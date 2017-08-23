@@ -3,7 +3,7 @@ ARG target=cheri256
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get update && apt-get install -y  --no-install-recommends \
-  binutils make ninja-build \
+  make ninja-build \
   autoconf automake autotools-dev libsigsegv2 m4 \
   flex bison \
   git \
@@ -16,21 +16,22 @@ RUN apt-get update && apt-get install -y  --no-install-recommends \
 # install CMake 3.9
 ADD ./cmake-3.9.1-Linux-x86_64.tar.gz /usr/local
 
-# install cheri binutils
+# install cheri binutils (only ld.bfd and objdump from the ancient binutils)
 COPY ./binutils.tar.bz2 /tmp
 RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
-  && mkdir -p /cheri-sdk/bin && mv /tmp/binutils/bin/* /cheri-sdk/bin \
-  && (cd /cheri-sdk/bin \
-      && mv mips64-ld mips64-ld.bfd \
-      && rm mips64-ar mips64-c++filt mips64-coffdump mips64-nlmconv mips64-ranlib mips64-srconv mips64-sysdump \
-      && for TOOL in addr2line ar as ld.bfd nm objcopy objdump readelf size strings strip; do \
-        ln -fs mips64-$TOOL cheri-unknown-freebsd-$TOOL ; \
-        ln -fs mips64-$TOOL mips4-unknown-freebsd-$TOOL ;\
-        ln -fs mips64-$TOOL mips64-unknown-freebsd-$TOOL ; \
+  && mkdir -p /cheri-sdk/bin \
+  && (cd /cheri-sdk/bin && mv mips64-ld mips64-ld.bfd \
+      && for TOOL in ld.bfd objdump; do \
+        cp -fv /tmp/binutils/bin/mips64-$TOOL $TOOL
+        ln -fs $TOOL cheri-unknown-freebsd-$TOOL ; \
+        ln -fs $TOOL mips64-unknown-freebsd-$TOOL ; \
       done) \
-  && ln -s /usr/bin/ar /cheri-sdk/bin/mips64-ar \
   && rm -r /tmp/binutils.tar.bz2 /tmp/binutils
 
+# Add the remaining binutils from elftoolchain:
+COPY ./elftoolchain.tar.xz /tmp
+RUN tar xJf /tmp/elftoolchain.tar.bz2 -C /tmp && mv /tmp/opt/elftoolchain/bin/* /cheri-sdk/bin \
+  && rm -rv /tmp/elftoolchain.tar.bz2 /tmp/opt
 
 # install QEMU
 #COPY ./qemu-${target}-install.zip /tmp

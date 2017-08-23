@@ -9,7 +9,7 @@ def buildSDKImage(String cpu) {
         // sh "env | sort"
         sh "pwd && ls -la"
         dir ("sdk-${cpu}-build") {
-            sh "cp -f ../cheri-sdk/Dockerfile ../binutils.tar.bz2 ../${cmakeArchive} ."
+            sh "cp -f ../cheri-sdk/Dockerfile ../binutils.tar.bz2 ../elftoolchain.tar.xz ../${cmakeArchive} ."
             sh "pwd && ls -la"
             /* This builds the actual image; synonymous to docker build on the command line */
             app = docker.build("ctsrd/cheri-sdk-${cpu}", "-q --build-arg target=${cpu} .")
@@ -55,6 +55,9 @@ node("docker") {
         step([$class     : 'CopyArtifact',
               projectName: "CHERI-binutils/label=linux/",
               filter     : "binutils.tar.bz2"])
+        step([$class     : 'CopyArtifact',
+              projectName: "elftoolchain/label=linux/",
+              filter     : "elftoolchain.tar.xz"])
         for (String cpu : targets) {
             dir ("sdk-${cpu}-build") {
                 echo "Copying CheriBSD ${cpu} sysroot"
