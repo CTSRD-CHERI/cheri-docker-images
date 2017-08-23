@@ -165,6 +165,9 @@ def runtests(qemu: pexpect.spawn, archive: Path, test_command: str,
              ssh_keyfile: str, ssh_port: int, timeout: int) -> bool:
     # create tmpfs on opt
     qemu.sendline("mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
+    qemu.expect_exact("#")
+    qemu.sendline("df -h")
+    qemu.expect_exact("#")
     with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
         subprocess.check_call(["tar", "xJf", str(archive), "-C", tmp])
         scp_cmd = ["scp", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
