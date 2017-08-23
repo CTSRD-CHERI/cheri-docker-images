@@ -149,7 +149,10 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
             i = child.expect([pexpect.TIMEOUT, PROMPT], timeout=60)
             if i == 0:  # Timeout
                 failure("timeout awaiting command prompt ", str(child))
-            success("===> got command prompt")
+
+            success("===> got command prompt, starting POSIX sh")
+            # csh is weird, use the normal POSIX sh instead
+            runCommand(child, "sh")
         elif i == 2:
             # shell started from /etc/rc:
             child.expect_exact("#", timeout=30)
