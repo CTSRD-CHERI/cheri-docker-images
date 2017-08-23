@@ -98,20 +98,21 @@ def maybe_decompress(path: Path, force_decompression: bool) -> Path:
     return path
 
 
+def runCommand(qemu: pexpect.spawn, cmd: str, expectedOutput=None):
+    qemu.sendline(cmd)
+    if expectedOutput:
+        qemu.expect(expectedOutput)
+    qemu.expect_exact("# ")
+
 def setup_ssh(qemu: pexpect.spawn, pubkey: Path):
-    qemu.sendline("mkdir -p /root/.ssh")
-    qemu.expect_exact("# ")
+    runCommand(qemu, "mkdir -p /root/.ssh")
     contents = pubkey.read_text(encoding="utf-8").strip()
-    qemu.sendline("echo " + shlex.quote(contents) + " >> /root/.ssh/authorized_keys")
-    qemu.expect_exact("# ")
-    qemu.sendline("echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config")
-    qemu.expect_exact("# ")
+    runCommand(qemu, "echo " + shlex.quote(contents) + " >> /root/.ssh/authorized_keys")
+    runCommand(qemu, "chmod 600 /root/.ssh/authorized_keys")
+    runCommand(qemu, "echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config")
     # TODO: check for bluehive images without /sbin/service
-    qemu.sendline("cat /root/.ssh/authorized_keys")
-    qemu.expect_exact("ssh-")
-    qemu.expect_exact("# ")
-    qemu.sendline("grep -n PemitRootLogin /etc/ssh/sshd_config")
-    qemu.expect_exact("# ")
+    runCommand(qemu, "cat /root/.ssh/authorized_keys", expectedOutput="ssh-")
+    runCommand(qemu, "grep -n PemitRootLogin /etc/ssh/sshd_config")
     qemu.sendline("service sshd restart")
     i = qemu.expect([pexpect.TIMEOUT, b"service: not found", b"Starting sshd."], timeout=120)
     if i == 0:
@@ -170,10 +171,8 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
 def runtests(qemu: pexpect.spawn, archive: Path, test_command: str,
              ssh_keyfile: str, ssh_port: int, timeout: int) -> bool:
     # create tmpfs on opt
-    qemu.sendline("mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
-    qemu.expect_exact("#")
-    qemu.sendline("df -h")
-    qemu.expect_exact("#")
+    runCommand(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
+    runCommand(qemu, "df -h", expectedOutput="/opt")
     with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
         subprocess.check_call(["tar", "xJf", str(archive), "-C", tmp])
         scp_cmd = ["scp", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
