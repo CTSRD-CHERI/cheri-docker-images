@@ -224,6 +224,7 @@ def main():
             tests_okay = runtests(qemu, archive=Path(test_archive), test_command=args.test_command,
                                   ssh_keyfile=args.ssh_key, ssh_port=args.ssh_port, timeout=args.test_timeout)
         except Exception:
+            import traceback
             traceback.print_exc(file=sys.stderr)
             failure("FAILED to run tests!! ", exit=False)
             tests_okay = False
