@@ -30,8 +30,8 @@ RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
 
 # Add the remaining binutils from elftoolchain:
 COPY ./elftoolchain.tar.xz /tmp
-RUN tar xJf /tmp/elftoolchain.tar.bz2 -C /tmp && mv /tmp/opt/elftoolchain/bin/* /cheri-sdk/bin \
-  && rm -rv /tmp/elftoolchain.tar.bz2 /tmp/opt
+RUN tar xJf /tmp/elftoolchain.tar.xz -C /tmp && mv /tmp/opt/elftoolchain/bin/* /cheri-sdk/bin \
+  && rm -rv /tmp/elftoolchain.tar.xz /tmp/opt
 
 # install QEMU
 #COPY ./qemu-${target}-install.zip /tmp
