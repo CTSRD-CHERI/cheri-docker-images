@@ -34,11 +34,16 @@ def buildCheriBSDImage(String cpu, String ABI) {
               target     : "."])
         step([$class     : 'CopyArtifact',
               projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
+              filter     : "ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-jenkins_bluehive.img.xz",
+              target     : "."])
+        step([$class     : 'CopyArtifact',
+              projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
               filter     : "ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2",
               target     : "."])
         sh "echo ${cpu}-${ABI} && find ."
         sh "mv ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2 cheribsd-malta64-kernel.bz2"
         sh "mv ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-full.img.xz cheribsd-full.img.xz"
+        sh "mv ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-jenkins_bluehive.img.xz cheribsd-minimal.img.xz"
     }
     stage("Build ${cpu}-${ABI} image") {
         sh 'pwd && cp -f ../cheribsd/Dockerfile ../cheribsd/boot_cheribsd.py . && ls -la'
