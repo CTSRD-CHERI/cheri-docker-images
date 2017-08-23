@@ -5,6 +5,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
         python3-minimal libpython3.5-stdlib python3-pip bzip2 xz-utils \
     && mkdir /usr/local/share/cheribsd && chmod 777 /usr/local/share/cheribsd \
     && pip3 install pexpect
+# add SSH key
+RUN mkdir -p /root/.ssh && ssh-keygen -t ed25519 -N "" -f /root/.ssh/id_ed25519
 
 # TODO: setup NFS so that cheribsd can access it
 COPY ./cheribsd-malta64-kernel.bz2 /usr/local/share/cheribsd
