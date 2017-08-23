@@ -50,6 +50,7 @@ LOGIN = b"login:"
 PROMPT = b"root@.+:"
 STOPPED = b"Stopped at"
 PANIC = b"panic: trap"
+PANIC_KDB = b"KDB: enter: panic"
 
 
 def success(*args, **kwargs):
@@ -122,10 +123,10 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
     # ignore SIGINT for the python code, the child should still receive it
     # signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-    i = child.expect([pexpect.TIMEOUT, STARTING_INIT, BOOT_FAILURE], timeout=5 * 60)
+    i = child.expect([pexpect.TIMEOUT, STARTING_INIT, BOOT_FAILURE, PANIC_KDB, PANIC, STOPPED], timeout=5 * 60)
     if i == 0:  # Timeout
         failure("timeout before booted: ", str(child))
-    elif i == 2:  # start up scripts failed
+    elif i != 1:  # start up scripts failed
         failure("start up scripts failed to run")
     success("===> init running")
 
