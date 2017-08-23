@@ -7,7 +7,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     && pip3 install pexpect
 
 # TODO: setup NFS so that cheribsd can access it
-
 COPY ./cheribsd-malta64-kernel.bz2 /usr/local/share/cheribsd
 COPY ./cheribsd-full.img.xz /usr/local/share/cheribsd
 COPY ./boot_cheribsd.py /usr/local/bin
