@@ -10,6 +10,11 @@ def buildCheriBSDImage(String cpu, String ABI) {
     def app
     stage("Copy ${cpu}-${ABI} artifact") {
         // Handle the diverging names of the cheribsd job
+        // GROOVY is shit, all these vars are implicitly globals
+        def CPU_PARAM = 'ERROR'
+        def BASE_ABI = 'ERROR'
+        def kernelPrefix = 'ERROR'
+        def imagePrefix = 'ERROR'
         if (ABI == 'mips') {
             CPU_PARAM = 'mips'
             BASE_ABI = 'n64'
@@ -20,8 +25,8 @@ def buildCheriBSDImage(String cpu, String ABI) {
             BASE_ABI = ABI == 'hybrid' ? 'n64' : 'cheriabi_static'
             kernelPrefix = cpu == 'cheri256' ? 'cheribsd-cheri' : 'cheribsd128-cheri128'
             imagePrefix = cpu == 'cheri256' ? 'cheribsd' : 'cheribsd128'
-            echo "CPU = ${cpu} -> kpfx = ${kernelPrefix} imgpfx = ${imagePrefix}"
         }
+        echo "CPU = ${cpu} -> kpfx = ${kernelPrefix} imgpfx = ${imagePrefix}"
         echo 'Copying CHERIBSD artifacts'
         step([$class     : 'CopyArtifact',
               projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
