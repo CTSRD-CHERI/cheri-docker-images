@@ -20,6 +20,7 @@ def buildCheriBSDImage(String cpu, String ABI) {
             BASE_ABI = ABI == 'hybrid' ? 'n64' : 'cheriabi_static'
             kernelPrefix = cpu == 'cheri256' ? 'cheribsd-cheri' : 'cheribsd128-cheri128'
             imagePrefix = cpu == 'cheri256' ? 'cheribsd' : 'cheribsd128'
+            echo "CPU = ${cpu} -> kpfx = ${kernelPrefix} imgpfx = ${imagePrefix}"
         }
         echo 'Copying CHERIBSD artifacts'
         step([$class     : 'CopyArtifact',
@@ -30,7 +31,7 @@ def buildCheriBSDImage(String cpu, String ABI) {
               projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
               filter     : "ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2",
               target     : "."])
-        sh "ls -lR"
+        sh "echo ${cpu}-${ABI} && find ."
         sh "mv ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2 cheribsd-malta64-kernel.bz2"
         sh "mv ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-full.img.xz cheribsd-full.img.xz"
     }
