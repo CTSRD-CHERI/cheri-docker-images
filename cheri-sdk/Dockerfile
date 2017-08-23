@@ -22,7 +22,7 @@ RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
   && mkdir -p /cheri-sdk/bin \
   && (cd /cheri-sdk/bin && mv mips64-ld mips64-ld.bfd \
       && for TOOL in ld.bfd objdump; do \
-        cp -fv /tmp/binutils/bin/mips64-$TOOL $TOOL
+        cp -fv /tmp/binutils/bin/mips64-$TOOL $TOOL \
         ln -fs $TOOL cheri-unknown-freebsd-$TOOL ; \
         ln -fs $TOOL mips64-unknown-freebsd-$TOOL ; \
       done) \
