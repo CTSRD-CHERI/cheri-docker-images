@@ -49,6 +49,7 @@ def buildCheriBSDImage(String cpu, String ABI) {
 
 node("docker") {
     stage('Clone repository') {
+        sh "rm -rf build-*"
         /* Let's make sure we have the repository cloned to our workspace */
         checkout scm
         sh "pwd"
