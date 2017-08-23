@@ -100,17 +100,23 @@ def maybe_decompress(path: Path, force_decompression: bool) -> Path:
 
 def setup_ssh(qemu: pexpect.spawn, pubkey: Path):
     qemu.sendline("mkdir -p /root/.ssh")
-    qemu.expect_exact("#")
+    qemu.expect_exact("# ")
     contents = pubkey.read_text(encoding="utf-8").strip()
     qemu.sendline("echo " + shlex.quote(contents) + " >> /root/.ssh/authorized_keys")
-    qemu.expect_exact("#")
+    qemu.expect_exact("# ")
     qemu.sendline("echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config")
-    qemu.expect_exact("#")
+    qemu.expect_exact("# ")
     # TODO: check for bluehive images without /sbin/service
     qemu.sendline("cat /root/.ssh/authorized_keys")
-    qemu.expect_exact('#')
+    qemu.expect_exact("ssh-")
+    qemu.expect_exact("# ")
+    qemu.sendline("grep -n PemitRootLogin /etc/ssh/sshd_config")
+    qemu.expect_exact("# ")
     qemu.sendline("service sshd restart")
-    qemu.expect_exact('#')
+    i = qemu.expect([pexpect.TIMEOUT, b"service: not found", b"Starting sshd."], timeout=120)
+    if i == 0:
+        failure("Timed out setting up SSH keys")
+    qemu.expect_exact("# ")
     time.sleep(2)  # sleep for two seconds to avoid a rejection
     success("===> SSH authorized_keys set up")
 
@@ -120,7 +126,7 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
                                      "-m", "2048", "-nographic",
                                      #  ssh forwarding:
                                      "-net", "nic", "-net", "user", "-redir", "tcp:" + str(ssh_port) + "::22"],
-                          echo=False)
+                          echo=False, timeout=60)
     # child.logfile=sys.stdout.buffer
     child.logfile_read = sys.stdout.buffer
     # ignore SIGINT for the python code, the child should still receive it
