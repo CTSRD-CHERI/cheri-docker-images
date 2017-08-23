@@ -107,8 +107,11 @@ def setup_ssh(qemu: pexpect.spawn, pubkey: Path):
     qemu.sendline("echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config")
     qemu.expect_exact("#")
     # TODO: check for bluehive images without /sbin/service
+    qemu.sendline("cat /root/.ssh/authorized_keys")
+    qemu.expect_exact('#')
     qemu.sendline("service sshd restart")
-    # time.sleep(2)
+    qemu.expect_exact('#')
+    time.sleep(2)  # sleep for two seconds to avoid a rejection
     success("===> SSH authorized_keys set up")
 
 
@@ -148,7 +151,11 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
         child.sendline("ifconfig le0 up && dhclient le0")
         i = child.expect([pexpect.TIMEOUT, b"DHCPACK from 10.0.2.2"], timeout=120)
         if i == 0:  # Timeout
-            failure("timeout awaiting command prompt ", str(child))
+            failure("timeout awaiting dhclient ", str(child))
+        i = child.expect([pexpect.TIMEOUT, b"bound to"], timeout=120)
+        if i == 0:  # Timeout
+            failure("timeout awaiting dhclient ", str(child))
+        child.expect_exact("#", timeout=30)
     else:
         failure("error during boot login prompt: ", str(child))
     return child
