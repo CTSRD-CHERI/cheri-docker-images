@@ -112,7 +112,7 @@ def setup_ssh(qemu: pexpect.spawn, pubkey: Path):
     runCommand(qemu, "echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config")
     # TODO: check for bluehive images without /sbin/service
     runCommand(qemu, "cat /root/.ssh/authorized_keys", expectedOutput="ssh-")
-    runCommand(qemu, "grep -n PemitRootLogin /etc/ssh/sshd_config")
+    runCommand(qemu, "grep -n PermitRootLogin /etc/ssh/sshd_config")
     qemu.sendline("service sshd restart")
     i = qemu.expect([pexpect.TIMEOUT, b"service: not found", b"Starting sshd."], timeout=120)
     if i == 0:
@@ -244,6 +244,9 @@ def main():
             import traceback
             traceback.print_exc(file=sys.stderr)
             failure("FAILED to run tests!! ", exit=False)
+            tests_okay = False
+        except KeyboardInterrupt:
+            failure("Tests interrupted!!! ", exit=False)
             tests_okay = False
 
     if args.interact:
