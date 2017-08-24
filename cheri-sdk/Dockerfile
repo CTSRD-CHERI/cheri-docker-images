@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y  --no-install-recommends \
   flex bison \
   git \
   python3-minimal libpython3.5-stdlib \
-  unzip bzip2 zip zutils xz-utils \
+  unzip bzip2 zip zutils xz-utils libarchive13 \
   libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debian libglib2.0-0
 # last line is libraries needed by QEMU
 
