@@ -54,24 +54,28 @@ PANIC = b"panic: trap"
 PANIC_KDB = b"KDB: enter: panic"
 
 
-def run_host_command(*args, **kwargs):
-    if kwargs:
-        print("\033[0;33mRunning", *args, "with", kwargs.copy(), "\033[0m", file=sys.stderr)
-    else:
-        print("\033[0;33mRunning", *args, "\033[0m", file=sys.stderr)
-    subprocess.check_call(*args, **kwargs)
+def info(*args, **kwargs):
+    print(*args, file=sys.stderr, flush=True, **kwargs)
 
 
 def success(*args, **kwargs):
-    print("\n\033[0;32m", *args, "\033[0m", sep="", file=sys.stderr, **kwargs)
+    print("\n\033[0;32m", *args, "\033[0m", sep="", file=sys.stderr, flush=True, **kwargs)
 
 
 # noinspection PyShadowingBuiltins
 def failure(*args, exit=True, **kwargs):
-    print("\n\033[0;31m", *args, "\033[0m", sep="", file=sys.stderr, **kwargs)
+    print("\n\033[0;31m", *args, "\033[0m", sep="", file=sys.stderr, flush=True, **kwargs)
     if exit:
         sys.exit(1)
     return False
+
+
+def run_host_command(*args, **kwargs):
+    if kwargs:
+        info("\033[0;33mRunning", *args, "with", kwargs.copy(), "\033[0m")
+    else:
+        info("\033[0;33mRunning", *args, "\033[0m")
+    subprocess.check_call(*args, **kwargs)
 
 
 def decompress(archive: Path, force_decompression: bool, *, cmd=None) -> Path:
@@ -80,7 +84,7 @@ def decompress(archive: Path, force_decompression: bool, *, cmd=None) -> Path:
         if not force_decompression:
             return result
         result.unlink()
-    print("Extracting", archive, file=sys.stderr)
+    info("Extracting", archive)
     run_host_command(cmd + [str(archive)])
     return result
 
@@ -191,13 +195,13 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
     run_cheribsd_command(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
     run_cheribsd_command(qemu, "mkdir -p /usr/local && mount -t tmpfs -o size=300m tmpfs /usr/local")
     run_cheribsd_command(qemu, "df -h", expected_output="/opt")
-    print("Will transfer the following archives: ", test_archives, file=sys.stderr)
+    info("Will transfer the following archives: ", test_archives)
+    # strip the .pub from the key file
     private_key = str(Path(ssh_keyfile).with_suffix(""))
     for archive in test_archives:
         with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
             run_host_command(["tar", "xJf", str(archive), "-C", tmp])
-            scp_cmd = ["scp", "-B", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
-                       # strip the .pub from
+            scp_cmd = ["scp", "-v", "-B", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
                        "-i", private_key, ".", "root@localhost:/"]
             run_host_command(["ls", "-la"], cwd=tmp)
             run_host_command(scp_cmd, cwd=tmp)
@@ -247,7 +251,7 @@ def main():
     # validate args:
     test_archives = []  # type: list
     if args.test_archive:
-        print("Using the following test archives:", args.test_archive, file=sys.stderr)
+        info("Using the following test archives:", args.test_archive)
         if not Path(args.ssh_key).exists():
             failure("SSH key missing: ", args.ssh_key)
         for test_archive in args.test_archive:
@@ -277,7 +281,7 @@ def main():
         try:
             setup_ssh_starttime = datetime.datetime.now()
             setup_ssh(qemu, Path(args.ssh_key))
-            print("Setting up SSH took: ", datetime.datetime.now() - setup_ssh_starttime, file=sys.stderr)
+            info("Setting up SSH took: ", datetime.datetime.now() - setup_ssh_starttime)
             tests_okay = runtests(qemu, test_archives=test_archives, test_command=args.test_command,
                                   ssh_keyfile=args.ssh_key, ssh_port=args.ssh_port, timeout=args.test_timeout)
         except Exception:
@@ -304,7 +308,7 @@ def main():
                 continue
 
     success("===> DONE")
-    print("Total execution time:", datetime.datetime.now() - starttime, file=sys.stderr)
+    info("Total execution time:", datetime.datetime.now() - starttime)
     if not tests_okay:
         exit(1)
 
