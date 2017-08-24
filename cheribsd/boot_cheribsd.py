@@ -180,6 +180,7 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
     setup_tests_starttime = datetime.datetime.now()
     # create tmpfs on opt
     runCommand(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
+    runCommand(qemu, "mkdir -p /usr/local && mount -t tmpfs -o size=300m tmpfs /usr/local")
     runCommand(qemu, "df -h", expectedOutput="/opt")
     print("Will transfer the following archives: ", test_archives)
     private_key = str(Path(ssh_keyfile).with_suffix(""))
