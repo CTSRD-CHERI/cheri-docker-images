@@ -201,7 +201,8 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
     for archive in test_archives:
         with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
             run_host_command(["tar", "xJf", str(archive), "-C", tmp])
-            scp_cmd = ["scp", "-v", "-B", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
+            scp_cmd = ["script", "-q", "/dev/null",  # fake tty to get progress output from scp
+                        "scp", "-B", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
                        "-i", private_key, ".", "root@localhost:/"]
             run_host_command(["ls", "-la"], cwd=tmp)
             run_host_command(scp_cmd, cwd=tmp)
