@@ -37,7 +37,6 @@ import argparse
 import datetime
 import os
 import pexpect
-import signal
 import shlex
 import subprocess
 import sys
@@ -55,12 +54,21 @@ PANIC = b"panic: trap"
 PANIC_KDB = b"KDB: enter: panic"
 
 
+def run_host_command(*args, **kwargs):
+    if kwargs:
+        print("\033[0;33mRunning", *args, "with", kwargs.copy(), "\033[0m", file=sys.stderr)
+    else:
+        print("\033[0;33mRunning", *args, "\033[0m", file=sys.stderr)
+    subprocess.check_call(*args, **kwargs)
+
+
 def success(*args, **kwargs):
-    print("\n\033[0;32m", *args, "\033[0m", sep="", file=sys.stderr)
+    print("\n\033[0;32m", *args, "\033[0m", sep="", file=sys.stderr, **kwargs)
 
 
+# noinspection PyShadowingBuiltins
 def failure(*args, exit=True, **kwargs):
-    print("\n\033[0;31m", *args, "\033[0m", sep="", file=sys.stderr)
+    print("\n\033[0;31m", *args, "\033[0m", sep="", file=sys.stderr, **kwargs)
     if exit:
         sys.exit(1)
     return False
@@ -73,7 +81,7 @@ def decompress(archive: Path, force_decompression: bool, *, cmd=None) -> Path:
             return result
         result.unlink()
     print("Extracting", archive, file=sys.stderr)
-    subprocess.check_call(cmd + [str(archive)])
+    run_host_command(cmd + [str(archive)])
     return result
 
 
@@ -100,21 +108,22 @@ def maybe_decompress(path: Path, force_decompression: bool) -> Path:
     return path
 
 
-def runCommand(qemu: pexpect.spawn, cmd: str, expectedOutput=None):
+def run_cheribsd_command(qemu: pexpect.spawn, cmd: str, expected_output=None):
     qemu.sendline(cmd)
-    if expectedOutput:
-        qemu.expect(expectedOutput)
+    if expected_output:
+        qemu.expect(expected_output)
     qemu.expect_exact("# ")
 
+
 def setup_ssh(qemu: pexpect.spawn, pubkey: Path):
-    runCommand(qemu, "mkdir -p /root/.ssh")
+    run_cheribsd_command(qemu, "mkdir -p /root/.ssh")
     contents = pubkey.read_text(encoding="utf-8").strip()
-    runCommand(qemu, "echo " + shlex.quote(contents) + " >> /root/.ssh/authorized_keys")
-    runCommand(qemu, "chmod 600 /root/.ssh/authorized_keys")
-    runCommand(qemu, "echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config")
+    run_cheribsd_command(qemu, "echo " + shlex.quote(contents) + " >> /root/.ssh/authorized_keys")
+    run_cheribsd_command(qemu, "chmod 600 /root/.ssh/authorized_keys")
+    run_cheribsd_command(qemu, "echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config")
     # TODO: check for bluehive images without /sbin/service
-    runCommand(qemu, "cat /root/.ssh/authorized_keys", expectedOutput="ssh-")
-    runCommand(qemu, "grep -n PermitRootLogin /etc/ssh/sshd_config")
+    run_cheribsd_command(qemu, "cat /root/.ssh/authorized_keys", expected_output="ssh-")
+    run_cheribsd_command(qemu, "grep -n PermitRootLogin /etc/ssh/sshd_config")
     qemu.sendline("service sshd restart")
     i = qemu.expect([pexpect.TIMEOUT, b"service: not found", b"Starting sshd."], timeout=120)
     if i == 0:
@@ -154,7 +163,7 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
 
             success("===> got command prompt, starting POSIX sh")
             # csh is weird, use the normal POSIX sh instead
-            runCommand(child, "sh")
+            run_cheribsd_command(child, "sh")
         elif i == 2:
             # shell started from /etc/rc:
             child.expect_exact("#", timeout=30)
@@ -179,20 +188,19 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
              ssh_keyfile: str, ssh_port: int, timeout: int) -> bool:
     setup_tests_starttime = datetime.datetime.now()
     # create tmpfs on opt
-    runCommand(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
-    runCommand(qemu, "mkdir -p /usr/local && mount -t tmpfs -o size=300m tmpfs /usr/local")
-    runCommand(qemu, "df -h", expectedOutput="/opt")
+    run_cheribsd_command(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
+    run_cheribsd_command(qemu, "mkdir -p /usr/local && mount -t tmpfs -o size=300m tmpfs /usr/local")
+    run_cheribsd_command(qemu, "df -h", expected_output="/opt")
     print("Will transfer the following archives: ", test_archives, file=sys.stderr)
     private_key = str(Path(ssh_keyfile).with_suffix(""))
     for archive in test_archives:
         with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
-            subprocess.check_call(["tar", "xJf", str(archive), "-C", tmp])
+            run_host_command(["tar", "xJf", str(archive), "-C", tmp])
             scp_cmd = ["scp", "-B", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
                        # strip the .pub from
                        "-i", private_key, ".", "root@localhost:/"]
-            print("Running", " ".join(scp_cmd), file=sys.stderr)
-            subprocess.check_call(["ls", "-la"], cwd=tmp)
-            subprocess.check_call(scp_cmd, cwd=tmp)
+            run_host_command(["ls", "-la"], cwd=tmp)
+            run_host_command(scp_cmd, cwd=tmp)
 
     success("Preparing test enviroment took ", datetime.datetime.now() - setup_tests_starttime)
     time.sleep(5)  # wait 5 seconds to make sure the disks have synced
@@ -210,6 +218,7 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
         return True
     else:
         return failure("error after ", testtime, "while running tests : ", str(qemu), exit=False)
+
 
 def main():
     # TODO: look at click package?
@@ -264,6 +273,7 @@ def main():
     # TODO: run the test script here, scp files over, etc.
     tests_okay = True
     if test_archives:
+        # noinspection PyBroadException
         try:
             setup_ssh_starttime = datetime.datetime.now()
             setup_ssh(qemu, Path(args.ssh_key))
