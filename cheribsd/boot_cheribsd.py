@@ -187,10 +187,10 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
     for archive in test_archives:
         with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
             subprocess.check_call(["tar", "xJf", str(archive), "-C", tmp])
-            scp_cmd = ["scp", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
+            scp_cmd = ["scp", "-B", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
                        # strip the .pub from
                        "-i", private_key, ".", "root@localhost:/"]
-            print("Running", scp_cmd, file=sys.stderr)
+            print("Running", " ".join(scp_cmd), file=sys.stderr)
             subprocess.check_call(scp_cmd, cwd=tmp)
 
     success("Preparing test enviroment took ", datetime.datetime.now() - setup_tests_starttime)
