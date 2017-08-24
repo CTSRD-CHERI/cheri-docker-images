@@ -251,7 +251,7 @@ def main():
     if test_archives:
         try:
             setup_ssh(qemu, Path(args.ssh_key))
-            tests_okay = runtests(qemu, archives=test_archives, test_command=args.test_command,
+            tests_okay = runtests(qemu, test_archives=test_archives, test_command=args.test_command,
                                   ssh_keyfile=args.ssh_key, ssh_port=args.ssh_port, timeout=args.test_timeout)
         except Exception:
             import traceback
