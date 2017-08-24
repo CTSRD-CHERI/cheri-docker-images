@@ -191,6 +191,7 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
                        # strip the .pub from
                        "-i", private_key, ".", "root@localhost:/"]
             print("Running", " ".join(scp_cmd), file=sys.stderr)
+            subprocess.check_call(["ls", "-la"], cwd=tmp)
             subprocess.check_call(scp_cmd, cwd=tmp)
 
     success("Preparing test enviroment took ", datetime.datetime.now() - setup_tests_starttime)
