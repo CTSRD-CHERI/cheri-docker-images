@@ -72,7 +72,7 @@ def decompress(archive: Path, force_decompression: bool, *, cmd=None) -> Path:
         if not force_decompression:
             return result
         result.unlink()
-    print("Extracting", archive)
+    print("Extracting", archive, file=sys.stderr)
     subprocess.check_call(cmd + [str(archive)])
     return result
 
@@ -182,7 +182,7 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
     runCommand(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
     runCommand(qemu, "mkdir -p /usr/local && mount -t tmpfs -o size=300m tmpfs /usr/local")
     runCommand(qemu, "df -h", expectedOutput="/opt")
-    print("Will transfer the following archives: ", test_archives)
+    print("Will transfer the following archives: ", test_archives, file=sys.stderr)
     private_key = str(Path(ssh_keyfile).with_suffix(""))
     for archive in test_archives:
         with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
@@ -190,7 +190,7 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
             scp_cmd = ["scp", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
                        # strip the .pub from
                        "-i", private_key, ".", "root@localhost:/"]
-            print("Running", scp_cmd)
+            print("Running", scp_cmd, file=sys.stderr)
             subprocess.check_call(scp_cmd, cwd=tmp)
 
     success("Preparing test enviroment took ", datetime.datetime.now() - setup_tests_starttime)
@@ -236,7 +236,7 @@ def main():
     # validate args:
     test_archives = []  # type: list
     if args.test_archive:
-        print("Using the following test archives:", args.test_archive)
+        print("Using the following test archives:", args.test_archive, file=sys.stderr)
         if not Path(args.ssh_key).exists():
             failure("SSH key missing: ", args.ssh_key)
         for test_archive in args.test_archive:
@@ -248,7 +248,7 @@ def main():
                 failure("Currently only .tar.xz archives are supported")
             test_archives.append(test_archive)
         if not args.test_command:
-            print("WARNING: No test command specified, tests will fail")
+            failure("WARNING: No test command specified, tests will fail", exit=False)
             args.test_command = "false"
 
     force_decompression = not args.reuse_image  # type: bool
@@ -265,7 +265,7 @@ def main():
         try:
             setup_ssh_starttime = datetime.datetime.now()
             setup_ssh(qemu, Path(args.ssh_key))
-            print("Setting up SSH took: ", datetime.datetime.now() - setup_ssh_starttime)
+            print("Setting up SSH took: ", datetime.datetime.now() - setup_ssh_starttime, file=sys.stderr)
             tests_okay = runtests(qemu, test_archives=test_archives, test_command=args.test_command,
                                   ssh_keyfile=args.ssh_key, ssh_port=args.ssh_port, timeout=args.test_timeout)
         except Exception:
@@ -292,7 +292,7 @@ def main():
                 continue
 
     success("===> DONE")
-    print("Total execution time:", datetime.datetime.now() - starttime)
+    print("Total execution time:", datetime.datetime.now() - starttime, file=sys.stderr)
     if not tests_okay:
         exit(1)
 
