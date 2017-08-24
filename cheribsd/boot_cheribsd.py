@@ -192,13 +192,13 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
             print("Running", scp_cmd)
             subprocess.check_call(scp_cmd, cwd=tmp)
 
-    success("Preparing test enviroment took ", setup_tests_starttime - datetime.datetime.now())
+    success("Preparing test enviroment took ", datetime.datetime.now() - setup_tests_starttime)
     run_tests_starttime = datetime.datetime.now()
     # Run the tests
     qemu.sendline(test_command +
                   " ;if test $? -eq 0; then echo 'TESTS' 'COMPLETED'; else echo 'TESTS' 'FAILED'; fi")
     i = qemu.expect([pexpect.TIMEOUT, b'TESTS COMPLETED', b'TESTS FAILED', PANIC, STOPPED], timeout=timeout)
-    testtime = run_tests_starttime - datetime.datetime.now()
+    testtime = datetime.datetime.now() - run_tests_starttime
     if i == 0:  # Timeout
         return failure("timeout after", testtime, "waiting for tests: ", str(qemu), exit=False)
     elif i == 1:
@@ -256,7 +256,7 @@ def main():
 
     boot_starttime = datetime.datetime.now()
     qemu = boot_cheribsd(args.qemu_cmd, kernel, diskimg, args.ssh_port)
-    success("Booting CheriBSD took: ", boot_starttime - datetime.datetime.now())
+    success("Booting CheriBSD took: ", datetime.datetime.now() - boot_starttime)
 
     # TODO: run the test script here, scp files over, etc.
     tests_okay = True
@@ -264,7 +264,7 @@ def main():
         try:
             setup_ssh_starttime = datetime.datetime.now()
             setup_ssh(qemu, Path(args.ssh_key))
-            print("Setting up SSH took: ", setup_ssh_starttime - datetime.datetime.now())
+            print("Setting up SSH took: ", datetime.datetime.now() - setup_ssh_starttime)
             tests_okay = runtests(qemu, test_archives=test_archives, test_command=args.test_command,
                                   ssh_keyfile=args.ssh_key, ssh_port=args.ssh_port, timeout=args.test_timeout)
         except Exception:
@@ -291,7 +291,7 @@ def main():
                 continue
 
     success("===> DONE")
-    print("Total execution time:", starttime - datetime.datetime.now())
+    print("Total execution time:", datetime.datetime.now() - starttime)
     if not tests_okay:
         exit(1)
 
