@@ -195,6 +195,7 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
             subprocess.check_call(scp_cmd, cwd=tmp)
 
     success("Preparing test enviroment took ", datetime.datetime.now() - setup_tests_starttime)
+    time.sleep(5)  # wait 5 seconds to make sure the disks have synced
     run_tests_starttime = datetime.datetime.now()
     # Run the tests
     qemu.sendline(test_command +
