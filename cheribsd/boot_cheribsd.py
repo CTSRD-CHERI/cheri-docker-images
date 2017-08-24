@@ -34,6 +34,7 @@
 # device.
 #
 import argparse
+import datetime
 import os
 import pexpect
 import signal
@@ -176,6 +177,7 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
 
 def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
              ssh_keyfile: str, ssh_port: int, timeout: int) -> bool:
+    setup_tests_starttime = datetime.datetime.now()
     # create tmpfs on opt
     runCommand(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
     runCommand(qemu, "df -h", expectedOutput="/opt")
@@ -188,17 +190,21 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
             print("Running", scp_cmd)
             subprocess.check_call(scp_cmd, cwd=tmp)
 
+    success("Preparing test enviroment took ", setup_tests_starttime - datetime.datetime.now())
+    run_tests_starttime = datetime.datetime.now()
     # Run the tests
     qemu.sendline(test_command +
                   " ;if test $? -eq 0; then echo 'TESTS' 'COMPLETED'; else echo 'TESTS' 'FAILED'; fi")
     i = qemu.expect([pexpect.TIMEOUT, b'TESTS COMPLETED', b'TESTS FAILED', PANIC, STOPPED], timeout=timeout)
+    testtime = run_tests_starttime - datetime.datetime.now()
     if i == 0:  # Timeout
-        return failure("timeout waiting for tests: ", str(qemu), exit=False)
+        return failure("timeout after", testtime, "waiting for tests: ", str(qemu), exit=False)
     elif i == 1:
         success("===> Tests completed!")
+        success("Running tests took ", testtime)
         return True
     else:
-        return failure("error while running tests: ", str(qemu), exit=False)
+        return failure("error after ", testtime, "while running tests : ", str(qemu), exit=False)
 
 def main():
     # TODO: look at click package?
@@ -222,6 +228,8 @@ def main():
 
     args = parser.parse_args()
 
+    starttime = datetime.datetime.now()
+
     # validate args:
     test_archives = []  # type: list
     if args.test_archive:
@@ -244,13 +252,17 @@ def main():
     kernel = str(maybe_decompress(Path(args.kernel), force_decompression))
     diskimg = str(maybe_decompress(Path(args.disk_image), force_decompression))
 
+    boot_starttime = datetime.datetime.now()
     qemu = boot_cheribsd(args.qemu_cmd, kernel, diskimg, args.ssh_port)
+    success("Booting CheriBSD took: ", boot_starttime - datetime.datetime.now())
 
     # TODO: run the test script here, scp files over, etc.
     tests_okay = True
     if test_archives:
         try:
+            setup_ssh_starttime = datetime.datetime.now()
             setup_ssh(qemu, Path(args.ssh_key))
+            print("Setting up SSH took: ", setup_ssh_starttime - datetime.datetime.now())
             tests_okay = runtests(qemu, test_archives=test_archives, test_command=args.test_command,
                                   ssh_keyfile=args.ssh_key, ssh_port=args.ssh_port, timeout=args.test_timeout)
         except Exception:
@@ -277,6 +289,7 @@ def main():
                 continue
 
     success("===> DONE")
+    print("Total execution time:", starttime - datetime.datetime.now())
     if not tests_okay:
         exit(1)
 
