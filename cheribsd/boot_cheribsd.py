@@ -202,14 +202,14 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
 
 def main():
     # TODO: look at click package?
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--qemu-cmd", default="qemu-system-cheri")
     parser.add_argument("--kernel", default="/usr/local/share/cheribsd/cheribsd-malta64-kernel")
     parser.add_argument("--disk-image", default="/usr/local/share/cheribsd/cheribsd-full.img")
     parser.add_argument("--reuse-image", action="store_true")
     parser.add_argument("--ssh-key", default=os.path.expanduser("~/.ssh/id_ed25519.pub"))
     parser.add_argument("--ssh-port", type=int, default=12345)
-    parser.add_argument("--test-archive", "-t", action='append',nargs=argparse.ZERO_OR_MORE)
+    parser.add_argument("--test-archive", "-t", action="append", nargs=1)
     parser.add_argument("--test-command", "-c")
     parser.add_argument("--test-timeout", "-tt", type=int, default=60 * 60)
     parser.add_argument("--interact", "-i", action="store_true")
@@ -223,15 +223,19 @@ def main():
     args = parser.parse_args()
 
     # validate args:
-    test_archives = args.test_archive  # type: list
-    if test_archives:
+    test_archives = []  # type: list
+    if args.test_archive:
+        print("Using the following test archives:", args.test_archive)
         if not Path(args.ssh_key).exists():
             failure("SSH key missing: ", args.ssh_key)
-        for test_archive in test_archives:
+        for test_archive in args.test_archive:
+            if isinstance(test_archive, list):
+                test_archive = test_archive[0]
             if not Path(test_archive).exists():
                 failure("Test archive is missing: ", test_archive)
             if not test_archive.endswith(".tar.xz"):
                 failure("Currently only .tar.xz archives are supported")
+            test_archives.append(test_archive)
         if not args.test_command:
             print("WARNING: No test command specified, tests will fail")
             args.test_command = "false"
