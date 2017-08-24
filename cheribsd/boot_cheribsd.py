@@ -2,6 +2,7 @@
 # PYTHON_ARGCOMPLETE_OK
 # -
 # Copyright (c) 2016-2017 SRI International
+# Copyright (c) 2017 Alex Richardson
 # All rights reserved.
 #
 # This software was developed by SRI International and the University of
@@ -173,17 +174,19 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
     return child
 
 
-def runtests(qemu: pexpect.spawn, archive: Path, test_command: str,
+def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
              ssh_keyfile: str, ssh_port: int, timeout: int) -> bool:
     # create tmpfs on opt
     runCommand(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
     runCommand(qemu, "df -h", expectedOutput="/opt")
-    with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
-        subprocess.check_call(["tar", "xJf", str(archive), "-C", tmp])
-        scp_cmd = ["scp", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
-                   "-i", ssh_keyfile, ".", "root@localhost:/"]
-        print("Running", scp_cmd)
-        subprocess.check_call(scp_cmd, cwd=tmp)
+    print("Will transfer the following archives: ", test_archives)
+    for archive in test_archives:
+        with tempfile.TemporaryDirectory(dir=os.getcwd(), prefix="test_files_") as tmp:
+            subprocess.check_call(["tar", "xJf", str(archive), "-C", tmp])
+            scp_cmd = ["scp", "-r", "-P", str(ssh_port), "-o", "StrictHostKeyChecking=no",
+                       "-i", ssh_keyfile, ".", "root@localhost:/"]
+            print("Running", scp_cmd)
+            subprocess.check_call(scp_cmd, cwd=tmp)
 
     # Run the tests
     qemu.sendline(test_command +
@@ -206,7 +209,7 @@ def main():
     parser.add_argument("--reuse-image", action="store_true")
     parser.add_argument("--ssh-key", default=os.path.expanduser("~/.ssh/id_ed25519.pub"))
     parser.add_argument("--ssh-port", type=int, default=12345)
-    parser.add_argument("--test-archive", "-t")
+    parser.add_argument("--test-archive", "-t", action='append',nargs=argparse.ZERO_OR_MORE)
     parser.add_argument("--test-command", "-c")
     parser.add_argument("--test-timeout", "-tt", type=int, default=60 * 60)
     parser.add_argument("--interact", "-i", action="store_true")
@@ -220,14 +223,15 @@ def main():
     args = parser.parse_args()
 
     # validate args:
-    test_archive = args.test_archive  # type: str
-    if test_archive:
+    test_archives = args.test_archive  # type: list
+    if test_archives:
         if not Path(args.ssh_key).exists():
             failure("SSH key missing: ", args.ssh_key)
-        if not Path(test_archive).exists():
-            failure("Test archive is missing: ", test_archive)
-        if not test_archive.endswith(".tar.xz"):
-            failure("Currently only .tar.xz archives are supported")
+        for test_archive in test_archives:
+            if not Path(test_archive).exists():
+                failure("Test archive is missing: ", test_archive)
+            if not test_archive.endswith(".tar.xz"):
+                failure("Currently only .tar.xz archives are supported")
         if not args.test_command:
             print("WARNING: No test command specified, tests will fail")
             args.test_command = "false"
@@ -240,10 +244,10 @@ def main():
 
     # TODO: run the test script here, scp files over, etc.
     tests_okay = True
-    if test_archive:
+    if test_archives:
         try:
             setup_ssh(qemu, Path(args.ssh_key))
-            tests_okay = runtests(qemu, archive=Path(test_archive), test_command=args.test_command,
+            tests_okay = runtests(qemu, archives=test_archives, test_command=args.test_command,
                                   ssh_keyfile=args.ssh_key, ssh_port=args.ssh_port, timeout=args.test_timeout)
         except Exception:
             import traceback
