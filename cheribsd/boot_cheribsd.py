@@ -192,7 +192,7 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
              ssh_keyfile: str, ssh_port: int, timeout: int) -> bool:
     setup_tests_starttime = datetime.datetime.now()
     # create tmpfs on opt
-    run_cheribsd_command(qemu, "mkdir -p /opt && mount -t tmpfs -o size=300m tmpfs /opt")
+    run_cheribsd_command(qemu, "mkdir -p /opt && mount -t tmpfs -o size=500m tmpfs /opt")
     run_cheribsd_command(qemu, "mkdir -p /usr/local && mount -t tmpfs -o size=300m tmpfs /usr/local")
     run_cheribsd_command(qemu, "df -h", expected_output="/opt")
     info("Will transfer the following archives: ", test_archives)
