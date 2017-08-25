@@ -191,6 +191,8 @@ def boot_cheribsd(qemu_cmd: str, kernel_image: str, disk_image: str, ssh_port: i
 def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
              ssh_keyfile: str, ssh_port: int, timeout: int) -> bool:
     setup_tests_starttime = datetime.datetime.now()
+    # disable coredumps, otherwise we get no space left on device errors
+    run_cheribsd_command(qemu, "sysctl kern.coredump=0")
     # create tmpfs on opt
     run_cheribsd_command(qemu, "mkdir -p /opt && mount -t tmpfs -o size=500m tmpfs /opt")
     run_cheribsd_command(qemu, "mkdir -p /usr/local && mount -t tmpfs -o size=300m tmpfs /usr/local")
