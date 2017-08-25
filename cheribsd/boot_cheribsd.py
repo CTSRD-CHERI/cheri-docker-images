@@ -210,6 +210,9 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
             run_host_command(["ls", "-la"], cwd=tmp)
             run_host_command(scp_cmd, cwd=tmp)
 
+    # See how much space we have after running scp
+    run_cheribsd_command(qemu, "df -h", expected_output="/opt")
+
     success("Preparing test enviroment took ", datetime.datetime.now() - setup_tests_starttime)
     time.sleep(5)  # wait 5 seconds to make sure the disks have synced
     run_tests_starttime = datetime.datetime.now()
@@ -223,6 +226,7 @@ def runtests(qemu: pexpect.spawn, test_archives: list, test_command: str,
     elif i == 1:
         success("===> Tests completed!")
         success("Running tests took ", testtime)
+        run_cheribsd_command(qemu, "df -h", expected_output="/opt")  # see how much space we have now
         return True
     else:
         return failure("error after ", testtime, "while running tests : ", str(qemu), exit=False)
