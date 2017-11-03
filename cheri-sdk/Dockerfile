@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y  --no-install-recommends \
 
 
 # install CMake 3.9
-ADD ./cmake-3.9.1-Linux-x86_64.tar.gz /usr/local
-
+COPY ./cmake-3.9.4-Linux-x86_64.tar.gz /tmp
+RUN tar xf /tmp/cmake-3.9.4-Linux-x86_64.tar.gz --strip 1 -C /usr/local && rm /tmp/cmake-3.9.4-Linux-x86_64.tar.gz
 # install cheri binutils (only ld.bfd and objdump from the ancient binutils)
 COPY ./binutils.tar.bz2 /tmp
 RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
