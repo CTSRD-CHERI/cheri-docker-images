@@ -1,7 +1,7 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 def targets = ["cheri256", "cheri128", "mips"]
-cmakeArchive = 'cmake-3.9.1-Linux-x86_64.tar.gz'
+cmakeArchive = 'cmake-3.9.4-Linux-x86_64.tar.gz'
 
 def buildSDKImage(String cpu) {
     def app
