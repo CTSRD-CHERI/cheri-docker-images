@@ -42,7 +42,7 @@ def buildSDKImage(String cpu) {
         }
     }
 }
-
+timeout(120) {
 node("docker") {
     stage('Clone repository') {
         /* Let's make sure we have the repository cloned to our workspace */
@@ -97,4 +97,5 @@ node("docker") {
         sh "ls -la"
         sh "rm -rf binutils.tar.bz *-build"
     }
+}
 }
