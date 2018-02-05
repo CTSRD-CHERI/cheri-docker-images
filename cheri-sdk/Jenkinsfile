@@ -6,7 +6,7 @@ def buildSDKImage() {
     def app
     stage("Build image") {
         dir ('cheri-sdk') {
-            sh 'mv -f ../*.tar.xz ../qemu-linux . && cp -f ../cmake-*.tar.gz .'
+            sh 'rm -rf qemu-linux && mv -f ../*.tar.xz ../qemu-linux . && cp -f ../cmake-*.tar.gz .'
             sh "pwd && ls -la"
             /* This builds the actual image; synonymous to docker build on the command line */
             app = docker.build("ctsrd/cheri-sdk", "-q .")
