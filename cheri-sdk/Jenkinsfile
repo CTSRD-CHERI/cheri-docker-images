@@ -5,9 +5,12 @@ cmakeArchive = 'cmake-3.10.2-Linux-x86_64.tar.gz'
 def buildSDKImage() {
     def app
     stage("Build image") {
-        sh "pwd && ls -la"
-        /* This builds the actual image; synonymous to docker build on the command line */
-        app = docker.build("ctsrd/cheri-sdk", "-q .")
+        dir ('cheri-sdk') {
+            sh 'mv -f ../*.tar.xz ../qemu-linux . && cp -f ../cmake-*.tar.gz .'
+            sh "pwd && ls -la"
+            /* This builds the actual image; synonymous to docker build on the command line */
+            app = docker.build("ctsrd/cheri-sdk", "-q .")
+        }
     }
 
     stage("Test image") {
