@@ -61,6 +61,7 @@ node("docker") {
         for (String cpu : targets) {
             dir ("sdk-${cpu}-build") {
                 echo "Copying CheriBSD ${cpu} sysroot"
+                // copyArtifacts filter: 'cheri-multi-master-clang-llvm.tar.xz', projectName: 'CLANG-LLVM-master', selector: lastSuccessful()
                 step([$class     : 'CopyArtifact',
                       projectName: "CHERIBSD-WORLD/ALLOC=jemalloc,CPU=${cpu},ISA=vanilla/",
                       filter     : "$cpu-vanilla-jemalloc-cheribsd-world.tar.xz"])
