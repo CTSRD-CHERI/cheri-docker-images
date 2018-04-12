@@ -42,7 +42,7 @@ done
 
     stage ("Cleaning up") {
         pwd
-        sh "rm -rf qemu-cheri/QEMU*"
-        sh "ls -laR"
+        sh "rm -rf qemu-cheri/qemu-linux"
+        sh "ls -laR qemu-cheri"
     }
 }
