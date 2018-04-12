@@ -1,26 +1,5 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
-def targets = ["cheri256", "cheri128", "cherimagic128"]
-
-def buildQEMUImage(String cpu) {
-    def app
-    stage("Build ${cpu} image") {
-        // sh "env | sort"
-        sh "pwd && ls -la"
-        app = docker.build("ctsrd/qemu-${cpu}", "-q --build-arg target=${cpu} .")
-        // Test that QEMU works:
-        app.inside {
-            sh "env | sort"
-            sh "which qemu-system-cheri && qemu-system-cheri --help > /dev/null"
-        }
-    }
-    stage("Push ${cpu} image") {
-        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-            app.push("${env.BUILD_NUMBER}")
-            app.push("latest")
-        }
-    }
-}
 
 node("docker") {
     stage('Clone repository') {
@@ -30,28 +9,34 @@ node("docker") {
     }
     stage("Copy artifacts") {
         dir ('qemu-cheri') {
-            for (String cpu : targets) {
-                echo "Copying QEMU ${cpu}"
-                    // the cheri256 job is called cheri:
-                    def qemuCPU = cpu == "cheri256" ? "cheri" : cpu
-                    echo "Copying QEMU ${cpu} artifacts"
-                    step([$class     : 'CopyArtifact',
-                              projectName: "QEMU-CHERI-multi/CPU=${qemuCPU},label=linux/",
-                              filter     : "qemu-cheri-install/**",
-                              target     : "QEMU-$cpu"])
-                    sh "chmod -v +x QEMU-$cpu/qemu-cheri-install/bin/*"
-            }
-            sh "ls -la"
+            sh 'rm -rfv qemu-linux'
+            copyArtifacts filter: 'qemu-linux/bin/qemu-system*', projectName: 'qemu/qemu-cheri'
+            sh 'chmod -v +x qemu-linux/bin/* && ls -laR'
         }
     }
-    // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
-    stage('Build SDK docker images') {
-        parallel targets.collectEntries {
-            [(it): {
-                dir ('qemu-cheri') {
-                    buildQEMUImage(it)
-                }
-            }]
+    dir ('qemu-cheri') {
+        def app
+        stage("Build image") {
+            // sh "env | sort"
+            sh "pwd && ls -la"
+            app = docker.build("ctsrd/qemu-cheri", "-q .")
+            // Test that QEMU works:
+            app.inside {
+                sh "env | sort"
+                sh '''
+for i in 128 256 128magic;
+do
+    which qemu-system-cheri$i
+    qemu-system-cheri$i --help > /dev/null
+done
+'''
+            }
+        }
+        stage("Push image") {
+            docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                app.push("${env.BUILD_NUMBER}")
+                app.push("latest")
+            }
         }
     }
 
