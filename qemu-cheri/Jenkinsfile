@@ -10,7 +10,7 @@ node("docker") {
     stage("Copy artifacts") {
         dir ('qemu-cheri') {
             sh 'rm -rfv qemu-linux'
-            copyArtifacts filter: 'qemu-linux/bin/qemu-system*', projectName: 'qemu/qemu-cheri'
+            copyArtifacts filter: 'qemu-linux/*', projectName: 'qemu/qemu-cheri'
             sh 'chmod -v +x qemu-linux/bin/* && ls -laR'
         }
     }
