@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ctsrd/qemu-cheri
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get update && apt-get install -y  --no-install-recommends \
@@ -33,16 +33,8 @@ RUN mkdir -p /cheri-sdk/bin
 # Similarly for elftoolchain, most of these tools can be replaced with the llvm version
 # Add the remaining binutils from elftoolchain:
 COPY ./elftoolchain.tar.xz /tmp
-RUN tar xJf /tmp/elftoolchain.tar.xz -C /tmp && mv /tmp/opt/elftoolchain/bin/* /cheri-sdk/bin \
-  && rm -rv /tmp/elftoolchain.tar.xz /tmp/opt
-
-# install QEMU
-#COPY ./qemu-${target}-install.zip /tmp
-#RUN unzip /tmp/qemu-${target}-install.zip -d /tmp \
-#  && chmod +x /tmp/qemu-cheri-install/bin/* \
-#  && cp -rv /tmp/qemu-cheri-install/* /cheri-sdk \
-#  && rm /tmp/qemu-${target}-install.zip && rm -r /tmp/qemu-cheri-install
-COPY ./qemu-linux/ /cheri-sdk
+RUN mkdir -p /tmp/elftoolchain tar xJf /tmp/elftoolchain.tar.xz -C /tmp/elftoolchain && mv /tmp/elftoolchain/bin/* /cheri-sdk/bin \
+  && rm -rv /tmp/elftoolchain.tar.xz /tmp/elftoolchain
 
 # install clang SDK (and delete some unnecessary files as they are really big statically linked)
 COPY ./cheri-multi-master-clang-llvm.tar.xz /tmp
@@ -50,11 +42,11 @@ RUN tar Jxf /tmp/cheri-multi-master-clang-llvm.tar.xz --strip-components 1 -C /c
   && ln -s ld.lld /cheri-sdk/bin/ld && rm -fv /usr/bin/ld \
   && rm /tmp/cheri-multi-master-clang-llvm.tar.xz \
   && (cd /cheri-sdk/bin && rm -vf clang-check opt llc lli llvm-lto2 llvm-lto llvm-c-test \
-         llvm-dsymutil llvm-dwp llvm-nm llvm-ar llvm-rtdyld *-llc \
+         llvm-dsymutil llvm-dwp llvm-rtdyld *-llc \
          llvm-extract llvm-xray llvm-split llvm-cov llvm-symbolizer llvm-dwarfdump \
          llvm-link llvm-stress llvm-cxxdump llvm-cvtres llvm-cat llvm-as \
          llvm-diff llvm-modextract llvm-tblgen llvm-dis llvm-pdbdump llvm-profdata \
-         llvm-opt-report llvm-bcanalyzer llvm-mcmarkup llvm-lib llvm-ranlib \
+         llvm-opt-report llvm-bcanalyzer llvm-mcmarkup llvm-lib \
          verify-uselistorder sanstats clang-offload-bundler c-index-test \
          clang-import-test bugpoint sancov obj2yaml yaml2obj)
  
