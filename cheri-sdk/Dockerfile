@@ -33,7 +33,7 @@ RUN mkdir -p /cheri-sdk/bin
 # Similarly for elftoolchain, most of these tools can be replaced with the llvm version
 # Add the remaining binutils from elftoolchain:
 COPY ./elftoolchain.tar.xz /tmp
-RUN mkdir -p /tmp/elftoolchain tar xJf /tmp/elftoolchain.tar.xz -C /tmp/elftoolchain && mv /tmp/elftoolchain/bin/* /cheri-sdk/bin \
+RUN mkdir -p /tmp/elftoolchain && tar xJf /tmp/elftoolchain.tar.xz -C /tmp/elftoolchain && mv /tmp/elftoolchain/bin/* /cheri-sdk/bin \
   && rm -rv /tmp/elftoolchain.tar.xz /tmp/elftoolchain
 
 # install clang SDK (and delete some unnecessary files as they are really big statically linked)
