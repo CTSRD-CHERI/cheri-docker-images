@@ -39,7 +39,7 @@ RUN mkdir -p /tmp/elftoolchain && tar xJf /tmp/elftoolchain.tar.xz -C /tmp/elfto
 # install clang SDK (and delete some unnecessary files as they are really big statically linked)
 COPY ./cheri-multi-master-clang-llvm.tar.xz /tmp
 RUN tar Jxf /tmp/cheri-multi-master-clang-llvm.tar.xz --strip-components 1 -C /cheri-sdk \
-  && ln -s ld.lld /cheri-sdk/bin/ld && rm -fv /usr/bin/ld \
+  && rm -fv /usr/bin/ld \
   && rm /tmp/cheri-multi-master-clang-llvm.tar.xz \
   && (cd /cheri-sdk/bin && rm -vf clang-check opt llc lli llvm-lto2 llvm-lto llvm-c-test \
          llvm-dsymutil llvm-dwp llvm-rtdyld *-llc \
