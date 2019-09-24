@@ -39,6 +39,24 @@ def buildSDKImage() {
     }
 }
 
+def buildCompilerExplorer() {
+    def app
+    stage("Build compiler explorer") {
+        dir ('cheri-compiler-explorer') {
+            app = docker.build("ctsrd/cheri-compiler-explorer", "-q .")
+        }
+    }
+    // TODO: make the pushing configurable
+    if (true) {
+        stage("Push image") {
+            docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                app.push("${env.BUILD_NUMBER}")
+                app.push("latest")
+            }
+        }
+    }
+}
+
 node("docker") {
     stage('Clone repository') {
         /* Let's make sure we have the repository cloned to our workspace */
