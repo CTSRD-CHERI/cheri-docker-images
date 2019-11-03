@@ -1,0 +1,43 @@
+---
+version: 3
+services:
+    letsencrypt:
+        image: linuxserver/letsencrypt
+        container_name: letsencrypt
+        cap_add:
+            - NET_ADMIN
+        environment:
+            - PUID=${PUID}
+            - PGID=${PGID}
+            - TZ=Europe/London
+            - URL=cheri-compiler-explorer.cl.cam.ac.uk
+            - SUBDOMAINS=www,
+            - VALIDATION=http
+            # - DNSPLUGIN=cloudflare #optional
+            # - DUCKDNSTOKEN=<token> #optional
+            - EMAIL=cl-ctsrd-infra@lists.cam.ac.uk #optional
+            # - DHLEVEL=2048 #optional
+            - ONLY_SUBDOMAINS=false #optional
+            # - EXTRA_DOMAINS=<extradomains> #optional
+            - STAGING=false #optional
+        volumes:
+            - /root/appdata/letsencrypt:/config
+        ports:
+            - 443:443
+            - 80:80 #optional
+        restart: on-failure
+    compiler-explorer:
+        image: ctsrd/cheri-compiler-explorer
+        container_name: compiler-explorer
+        environment:
+            - PUID=${PUID}
+            - PGID=${PGID}
+        restart: on-failure
+    watchtower:
+        image: containrrr/watchtower
+        command: --cleanup --label-enable
+        container_name: watchtower
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /root/.docker/config.json:/config.json
+        restart: on-failure
