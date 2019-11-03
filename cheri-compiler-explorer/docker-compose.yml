@@ -1,5 +1,5 @@
 ---
-version: 3
+version: "3"
 services:
     letsencrypt:
         image: linuxserver/letsencrypt
@@ -7,11 +7,11 @@ services:
         cap_add:
             - NET_ADMIN
         environment:
-            - PUID=${PUID}
-            - PGID=${PGID}
+#            - PUID=${PUID}
+#            - PGID=${PGID}
             - TZ=Europe/London
             - URL=cheri-compiler-explorer.cl.cam.ac.uk
-            - SUBDOMAINS=www,
+            # - SUBDOMAINS=www,
             - VALIDATION=http
             # - DNSPLUGIN=cloudflare #optional
             # - DUCKDNSTOKEN=<token> #optional
@@ -32,9 +32,6 @@ services:
     compiler-explorer:
         image: ctsrd/cheri-compiler-explorer
         container_name: compiler-explorer
-        environment:
-            - PUID=${PUID}
-            - PGID=${PGID}
         restart: on-failure
     watchtower:
         image: containrrr/watchtower
@@ -42,5 +39,5 @@ services:
         container_name: watchtower
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - /root/.docker/config.json:/config.json
+            # - /root/.docker/config.json:/config.json
         restart: on-failure
