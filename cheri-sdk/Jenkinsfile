@@ -43,7 +43,7 @@ def buildCompilerExplorer() {
     def app
     stage("Build compiler explorer") {
         dir ('cheri-compiler-explorer') {
-            app = docker.build("ctsrd/cheri-compiler-explorer", "-q .")
+            app = docker.build("ctsrd/cheri-compiler-explorer", "--no-cache -q .")
         }
     }
     // TODO: make the pushing configurable

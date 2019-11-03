@@ -19,6 +19,9 @@ COPY "c++.local.properties" "/compiler-explorer/etc/config/c++.defaults.properti
 COPY "c.local.properties" "/compiler-explorer/etc/config/c.defaults.properties"
 
 WORKDIR /compiler-explorer
+RUN useradd gcc-user && mkdir -p /compiler-explorer /home/gcc-user && chown -R gcc-user /compiler-explorer && chown gcc-user /home/gcc-user
+ENV HOME /home/gcc-user
+USER gcc-user
 
 ENTRYPOINT [ "make" ]
 EXPOSE 10240
