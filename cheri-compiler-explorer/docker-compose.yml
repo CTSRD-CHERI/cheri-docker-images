@@ -35,7 +35,7 @@ services:
         restart: on-failure
     watchtower:
         image: containrrr/watchtower
-        command: --cleanup --label-enable
+        command: --cleanup
         container_name: watchtower
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
