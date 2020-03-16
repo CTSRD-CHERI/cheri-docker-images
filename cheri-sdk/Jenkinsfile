@@ -5,8 +5,8 @@ cmakeVersionMaj = 3
 cmakeVersionMin = 16
 cmakeVersionPat = 5
 cmakeVersionFull="${cmakeVersionMaj}.${cmakeVersionMin}.${cmakeVersionPat}"
-cmakeUrlDir = 'v${cmakeVersionMaj}.${cmakeVersionMin}'
-cmakeArchive = 'cmake-${cmakeVersionFull}-Linux-x86_64.tar.gz'
+cmakeUrlDir = "v${cmakeVersionMaj}.${cmakeVersionMin}"
+cmakeArchive = "cmake-${cmakeVersionFull}-Linux-x86_64.tar.gz"
 
 def buildSDKImage() {
     def app
@@ -87,7 +87,7 @@ node("docker") {
         // copyArtifacts filter: 'elftoolchain.tar.xz', projectName: 'elftoolchain/label=linux/'
         // For clang copy the last successful build instead of the one with all tests passed for now since there are some flaky tests
         copyArtifacts filter: 'cheri-multi-master-clang-llvm.tar.xz', projectName: 'CLANG-LLVM-master/CPU=cheri-multi,label=linux/', selector: lastSuccessful()
-        copyArtifacts filter: 'qemu-linux/*', projectName: 'qemu/qemu-cheri'
+        copyArtifacts projectName: 'qemu/qemu-cheri'
         sh "pwd && ls -la"
     }
     buildSDKImage()
