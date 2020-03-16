@@ -51,7 +51,7 @@ def buildCompilerExplorer() {
             // Get the CheriBSD headers by fetching the MIPS SDK:
             copyArtifacts filter: 'mips-cap-table-pcrel-cheribsd-world.tar.xz', projectName: 'CHERIBSD-WORLD/CPU=mips,ISA=cap-table-pcrel/', selector: lastSuccessful()
             sh '''
-rm -rf llvm && mkdir -p llvm && tar Jxf ../cheri-multi-master-clang-llvm.tar.xz --strip-components 1 -C llvm
+rm -rf llvm && mkdir -p llvm && tar Jxf ../cheri-sdk/cheri-multi-master-clang-llvm.tar.xz --strip-components 1 -C llvm
 rm -f ./llvm/lib/*.a ./llvm/lib/*.so
 rm -rf ./llvm/lib/cmake
 rm -rf ./llvm/lib/*.so.*
