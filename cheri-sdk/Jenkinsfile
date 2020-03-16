@@ -48,6 +48,18 @@ def buildCompilerExplorer() {
     def app
     stage("Build compiler explorer") {
         dir ('cheri-compiler-explorer') {
+            // Get the CheriBSD headers by fetching the MIPS SDK:
+            copyArtifacts filter: 'mips-cap-table-pcrel-cheribsd-world.tar.xz', projectName: 'CHERIBSD-WORLD/CPU=mips,ISA=cap-table-pcrel/', selector: lastSuccessful()
+            sh '''
+rm -rf llvm && mkdir -p llvm && tar Jxf ../cheri-multi-master-clang-llvm.tar.xz --strip-components 1 -C llvm
+rm -f ./llvm/lib/*.a ./llvm/lib/*.so
+rm -rf ./llvm/lib/cmake
+rm -rf ./llvm/lib/*.so.*
+pwd && find .
+rm -rf cheribsd && mkdir -p cheribsd && tar Jxf mips-cap-table-pcrel-cheribsd-world.tar.xz --strip-components 1 -C cheribsd
+mv -f ./cheribsd/sysroot/usr/include ./cheribsd && rm -rf ./cheribsd/sysroot
+rm -f *.tar.xz
+'''
             app = docker.build("ctsrd/cheri-compiler-explorer", "--no-cache -q .")
         }
     }
@@ -72,11 +84,10 @@ node("docker") {
         // fetch cmake
         sh "test -e $cmakeArchive || curl -O https://cmake.org/files/$cmakeUrlDir/$cmakeArchive"
         // copyArtifacts filter: 'binutils.tar.bz2', projectName: 'CHERI-binutils/label=linux/', selector: lastSuccessful()
-        copyArtifacts filter: 'elftoolchain.tar.xz', projectName: 'elftoolchain/label=linux/'
+        // copyArtifacts filter: 'elftoolchain.tar.xz', projectName: 'elftoolchain/label=linux/'
         // For clang copy the last successful build instead of the one with all tests passed for now since there are some flaky tests
         copyArtifacts filter: 'cheri-multi-master-clang-llvm.tar.xz', projectName: 'CLANG-LLVM-master/CPU=cheri-multi,label=linux/', selector: lastSuccessful()
-        copyArtifacts filter: 'qemu-linux/bin/qemu-system*', projectName: 'qemu/qemu-cheri'
-        // TODO: include newlib baremetal?
+        copyArtifacts filter: 'qemu-linux/*', projectName: 'qemu/qemu-cheri'
         sh "pwd && ls -la"
     }
     buildSDKImage()
