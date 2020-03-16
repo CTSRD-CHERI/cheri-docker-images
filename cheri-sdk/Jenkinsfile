@@ -1,7 +1,12 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
-cmakeVersion = "v3.13"
-cmakeArchive = 'cmake-3.13.2-Linux-x86_64.tar.gz'
+
+cmakeVersionMaj = 3
+cmakeVersionMin = 16
+cmakeVersionPat = 5
+cmakeVersionFull="${cmakeVersionMaj}.${cmakeVersionMin}.${cmakeVersionPat}"
+cmakeUrlDir = 'v${cmakeVersionMaj}.${cmakeVersionMin}'
+cmakeArchive = 'cmake-${cmakeVersionFull}-Linux-x86_64.tar.gz'
 
 def buildSDKImage() {
     def app
@@ -10,7 +15,7 @@ def buildSDKImage() {
             sh 'rm -rf qemu-linux && mv -f ../*.tar.xz ../qemu-linux . && cp -f ../cmake-*.tar.gz .'
             sh "pwd && ls -la"
             /* This builds the actual image; synonymous to docker build on the command line */
-            app = docker.build("ctsrd/cheri-sdk", "-q .")
+            app = docker.build("ctsrd/cheri-sdk", "-q . --build-arg cmake_version=${cmakeVersionFull}")
         }
     }
 
@@ -65,7 +70,7 @@ node("docker") {
     }
     stage("Copy artifacts") {
         // fetch cmake
-        sh "test -e $cmakeArchive || curl -O https://cmake.org/files/$cmakeVersion/$cmakeArchive"
+        sh "test -e $cmakeArchive || curl -O https://cmake.org/files/$cmakeUrlDir/$cmakeArchive"
         // copyArtifacts filter: 'binutils.tar.bz2', projectName: 'CHERI-binutils/label=linux/', selector: lastSuccessful()
         copyArtifacts filter: 'elftoolchain.tar.xz', projectName: 'elftoolchain/label=linux/'
         // For clang copy the last successful build instead of the one with all tests passed for now since there are some flaky tests

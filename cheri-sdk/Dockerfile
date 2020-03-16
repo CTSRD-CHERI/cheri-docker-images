@@ -1,6 +1,8 @@
 FROM ctsrd/qemu-cheri
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
+ARG cmake_version
+
 RUN apt-get update && apt-get install -y  --no-install-recommends \
   make ninja-build \
   autoconf automake autotools-dev libsigsegv2 m4 \
@@ -11,9 +13,9 @@ RUN apt-get update && apt-get install -y  --no-install-recommends \
   libpixman-1-0 libjpeg8 libnuma1 libpng12-0 libsdl1.2debian libglib2.0-0
 # last line is libraries needed by QEMU
 
-# install CMake 3.13
-COPY ./cmake-3.13.2-Linux-x86_64.tar.gz /tmp
-RUN tar xf /tmp/cmake-3.13.2-Linux-x86_64.tar.gz --strip 1 -C /usr/local && rm /tmp/cmake-3.13.2-Linux-x86_64.tar.gz
+# install CMake
+COPY ./cmake-${cmake_version}-Linux-x86_64.tar.gz /tmp
+RUN tar xf /tmp/cmake-${cmake_version}-Linux-x86_64.tar.gz --strip 1 -C /usr/local && rm /tmp/cmake-${cmake_version}-Linux-x86_64.tar.gz
 RUN mkdir -p /cheri-sdk/bin
 
 # Binutils is no longer required, we can probably delete this
