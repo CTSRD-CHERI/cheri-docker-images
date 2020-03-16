@@ -6,8 +6,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && apt-get autoremove --purge -y \
     && apt-get autoclean -y \
     && rm -rf /var/cache/apt/* /tmp/*
-RUN echo "*** Installing node.js 10 ***" \
-    && DEBIAN_FRONTEND=noninteractive curl -sL https://deb.nodesource.com/setup_10.x | bash \
+RUN echo "*** Installing node.js 13 ***" \
+    && DEBIAN_FRONTEND=noninteractive curl -sL https://deb.nodesource.com/setup_13.x | bash - \
     && apt-get install -y nodejs
 RUN git clone https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer \
     && cd /compiler-explorer \
