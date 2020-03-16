@@ -18,26 +18,6 @@ COPY ./cmake-${cmake_version}-Linux-x86_64.tar.gz /tmp
 RUN tar xf /tmp/cmake-${cmake_version}-Linux-x86_64.tar.gz --strip 1 -C /usr/local && rm /tmp/cmake-${cmake_version}-Linux-x86_64.tar.gz
 RUN mkdir -p /cheri-sdk/bin
 
-# Binutils is no longer required, we can probably delete this
-# install cheri binutils (only ld.bfd and objdump from the ancient binutils)
-# COPY ./binutils.tar.bz2 /tmp
-# RUN tar xjf /tmp/binutils.tar.bz2 -C /tmp \
-#  && mkdir -p /cheri-sdk/bin \
-#  && (cd /cheri-sdk/bin && mv /tmp/binutils/bin/mips64-ld /tmp/binutils/bin/mips64-ld.bfd \
-#      && for TOOL in ld.bfd objdump; do \
-#        cp -fv /tmp/binutils/bin/mips64-$TOOL $TOOL \
-#        ln -fs $TOOL cheri-unknown-freebsd-$TOOL ; \
-#        ln -fs $TOOL mips64-unknown-freebsd-$TOOL ; \
-#      done) \
-#  && rm -r /tmp/binutils.tar.bz2 /tmp/binutils
-
-
-# Similarly for elftoolchain, most of these tools can be replaced with the llvm version
-# Add the remaining binutils from elftoolchain:
-COPY ./elftoolchain.tar.xz /tmp
-RUN mkdir -p /tmp/elftoolchain && tar xJf /tmp/elftoolchain.tar.xz -C /tmp/elftoolchain && mv /tmp/elftoolchain/bin/* /cheri-sdk/bin \
-  && rm -rv /tmp/elftoolchain.tar.xz /tmp/elftoolchain
-
 # install clang SDK (and delete some unnecessary files as they are really big statically linked)
 COPY ./cheri-multi-master-clang-llvm.tar.xz /tmp
 RUN tar Jxf /tmp/cheri-multi-master-clang-llvm.tar.xz --strip-components 1 -C /cheri-sdk \
