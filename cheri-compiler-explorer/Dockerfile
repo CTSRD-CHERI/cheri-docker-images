@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
-    && apt-get install -y wget curl make git ca-certificates \
+    && apt-get install -y wget curl make git ca-certificates libxml2 \
     && apt-get autoremove --purge -y \
     && apt-get autoclean -y \
     && rm -rf /var/cache/apt/* /tmp/*
