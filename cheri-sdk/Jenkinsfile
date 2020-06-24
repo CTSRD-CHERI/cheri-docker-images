@@ -2,8 +2,8 @@
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 
 cmakeVersionMaj = 3
-cmakeVersionMin = 16
-cmakeVersionPat = 5
+cmakeVersionMin = 17
+cmakeVersionPat = 3
 cmakeVersionFull="${cmakeVersionMaj}.${cmakeVersionMin}.${cmakeVersionPat}"
 cmakeUrlDir = "v${cmakeVersionMaj}.${cmakeVersionMin}"
 cmakeArchive = "cmake-${cmakeVersionFull}-Linux-x86_64.tar.gz"
