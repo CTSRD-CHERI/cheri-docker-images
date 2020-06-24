@@ -24,7 +24,7 @@ node("docker") {
             app.inside {
                 sh "env | sort"
                 sh '''
-for i in 128 256 128magic;
+for i in 128 riscv64cheri;
 do
     which qemu-system-cheri$i
     qemu-system-cheri$i --help > /dev/null
