@@ -11,6 +11,8 @@ node("docker") {
         dir ('qemu-cheri') {
             sh 'rm -rfv qemu-linux'
             copyArtifacts filter: 'qemu-linux/**', projectName: 'qemu/qemu-cheri'
+            // Keep only the CHERI binaries
+            sh 'rm -vf qemu-linux/bin/qemu-system-{riscv32,riscv64,mips64,x86_64}'
             sh 'chmod -v +x qemu-linux/bin/* && ls -laR'
         }
     }
