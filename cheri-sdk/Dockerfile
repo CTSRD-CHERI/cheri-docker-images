@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y  --no-install-recommends \
   autoconf automake autotools-dev libsigsegv2 m4 \
   flex bison \
   git ca-certificates \
-  python3-minimal libpython3.5-stdlib \
+  python3-minimal \
   unzip bzip2 zip zutils xz-utils libarchive13 \
 # last line is libraries needed by QEMU
 
