@@ -29,7 +29,7 @@ node("docker") {
 for i in cheri128 riscv64cheri;
 do
     which qemu-system-$i
-    qemu-system-cheri$i --help > /dev/null
+    qemu-system-$i --help > /dev/null
 done
 '''
             }
