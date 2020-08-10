@@ -1,54 +1,18 @@
 // https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
-def targets = [
-                  ['cheri256', 'mips'], ['cheri256', 'hybrid'], // ['cheri256', 'cheriabi-static'],
-                  ['cheri128', 'mips'], ['cheri128', 'hybrid'], // ['cheri128', 'cheriabi-static'],
-                  // TODO: build magic 128?
-              ]
+def targets = ['mips-purecap']
 
-def buildCheriBSDImage(String cpu, String ABI) {
+def buildCheriBSDImages(String suffix) {
     def app
     stage("Copy ${cpu}-${ABI} artifact") {
-        // Handle the diverging names of the cheribsd job
-        // GROOVY is shit, all these vars are implicitly globals
-        def CPU_PARAM = 'ERROR'
-        def BASE_ABI = 'ERROR'
-        def kernelPrefix = 'ERROR'
-        def imagePrefix = 'ERROR'
-        if (ABI == 'mips') {
-            CPU_PARAM = 'mips'
-            BASE_ABI = 'n64'
-            kernelPrefix = 'freebsd'
-            imagePrefix = 'freebsd'
-        } else {
-            CPU_PARAM = cpu
-            BASE_ABI = ABI == 'hybrid' ? 'n64' : 'cheriabi_static'
-            kernelPrefix = cpu == 'cheri256' ? 'cheribsd-cheri' : 'cheribsd128-cheri128'
-            imagePrefix = cpu == 'cheri256' ? 'cheribsd' : 'cheribsd128'
-        }
-        echo "CPU = ${cpu} -> kpfx = ${kernelPrefix} imgpfx = ${imagePrefix}"
         echo 'Copying CHERIBSD artifacts'
-        step([$class     : 'CopyArtifact',
-              projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
-              filter     : "ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-full.img.xz",
-              target     : "."])
-        step([$class     : 'CopyArtifact',
-              projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
-              filter     : "ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-jenkins_bluehive.img.xz",
-              target     : "."])
-        step([$class     : 'CopyArtifact',
-              projectName: "CheriBSD-allkernels-multi/BASE_ABI=${BASE_ABI},CPU=${CPU_PARAM},ISA=vanilla,label=freebsd",
-              filter     : "ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2",
-              target     : "."])
-        sh "echo ${cpu}-${ABI} && find ."
-        sh "mv ctsrd/cheribsd/trunk/bsdtools/${kernelPrefix}-malta64-kernel.bz2 cheribsd-malta64-kernel.bz2"
-        sh "mv ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-full.img.xz cheribsd-full.img.xz"
-        sh "mv ctsrd/cheribsd/trunk/bsdtools/${imagePrefix}-jenkins_bluehive.img.xz cheribsd-minimal.img.xz"
+        copyArtifacts filter: "artifacts-${suffix}", projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
+        sh "echo ${suffix} && find ."
+        sh "cd artifacts-${suffix} && tar xJf cheribsd-sysroot.tar.xz"
     }
-    stage("Build ${cpu}-${ABI} image") {
-        sh 'pwd && cp -f ../cheribsd/Dockerfile ../cheribsd/boot_cheribsd.py . && ls -la'
-        sh 'perl -pi -e \'s/\\$\\{CPU\\}/'  + cpu + '/g\' Dockerfile'
-        app = docker.build("ctsrd/${cpu}-cheribsd-${ABI}", "-q .")
+    stage("Build CheriBSD ${suffix} SDK image") {
+        sh 'pwd && cp -f ../cheribsd/Dockerfile . && ls -la'
+        app = docker.build("ctsrd/cheribsd-sdk-${suffix}", "-q .")
     }
     stage("Push ${cpu}-${ABI} image") {
         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
@@ -67,19 +31,15 @@ node("docker") {
     }
     // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
     stage('Build SDK docker images') {
-//        dir('build-cheri256-mips') {
-//            buildCheriBSDImage('cheri256', 'mips')
-//        }
-        parallel targets.collectEntries {
-            [(it[0] + '-' + it[1]): {
-                dir ("build-${it[0]}-${it[1]}") {
-                    buildCheriBSDImage(it[0], it[1])
+        parallel targets.each {
+            [(it): {
+                dir("build-${it}") {
+                    buildCheriBSDImage(it)
                 }
             }]
         }
     }
-
-    stage ("Cleaning up") {
+    stage("Cleaning up") {
         pwd
         sh "rm -rf build-*"
         sh "ls -laR"
