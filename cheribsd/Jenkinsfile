@@ -1,4 +1,4 @@
-def targets = ['mips-purecap']
+def targets = ['mips-purecap', 'riscv64-purecap', 'mips-nocheri', 'riscv64', 'aarch64', 'amd64']
 
 def buildCheriBSDImage(String suffix) {
     def app
