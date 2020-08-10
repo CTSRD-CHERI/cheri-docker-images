@@ -1,20 +1,22 @@
-// https://getintodevops.com/blog/building-your-first-docker-image-with-jenkins-2-guide-for-developers
-properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 def targets = ['mips-purecap']
 
-def buildCheriBSDImages(String suffix) {
+def buildCheriBSDImage(String suffix) {
     def app
-    stage("Copy ${cpu}-${ABI} artifact") {
-        echo 'Copying CHERIBSD artifacts'
-        copyArtifacts filter: "artifacts-${suffix}", projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
-        sh "echo ${suffix} && find ."
-        sh "cd artifacts-${suffix} && tar xJf cheribsd-sysroot.tar.xz"
+    stage("Copy CheriBSD ${suffix} artifact") {
+        echo "Copying CheriBSD artifacts (artifacts-${suffix}/**)"
+        copyArtifacts filter: "artifacts-${suffix}/**", projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
+        sh """
+echo ${suffix}
+find .
+mv -fv artifacts-${suffix}/* .
+tar xJf cheribsd-sysroot.tar.xz
+"""
     }
-    stage("Build CheriBSD ${suffix} SDK image") {
+    stage("Build CheriBSD (${suffix}) SDK image") {
         sh 'pwd && cp -f ../cheribsd/Dockerfile . && ls -la'
-        app = docker.build("ctsrd/cheribsd-sdk-${suffix}", "-q .")
+        app = docker.build("ctsrd/cheribsd-sdk-${suffix}", ".")
     }
-    stage("Push ${cpu}-${ABI} image") {
+    stage("Push CheriBSD (${suffix}) SDK image") {
         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
             app.push("${env.BUILD_NUMBER}")
             app.push("latest")
@@ -31,10 +33,10 @@ node("docker") {
     }
     // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
     stage('Build SDK docker images') {
-        parallel targets.each {
-            [(it): {
-                dir("build-${it}") {
-                    buildCheriBSDImage(it)
+        parallel targets.collectEntries { String suffix ->
+            [suffix, {
+                dir("build-${suffix}") {
+                    buildCheriBSDImage(suffix)
                 }
             }]
         }
