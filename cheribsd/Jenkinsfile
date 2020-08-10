@@ -9,7 +9,7 @@ def buildCheriBSDImage(String suffix) {
 echo ${suffix}
 find .
 mv -fv artifacts-${suffix}/* .
-tar xJf cheribsd-sysroot.tar.xz
+# tar xJf cheribsd-sysroot.tar.xz
 """
     }
     stage("Build CheriBSD (${suffix}) SDK image") {
