@@ -1,35 +1,23 @@
-FROM ctsrd/qemu-cheri
+FROM ctsrd/qemu-cheri:latest
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 ARG cmake_version
 
-RUN apt-get update && apt-get install -y  --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
   make ninja-build \
   autoconf automake autotools-dev libsigsegv2 m4 \
   flex bison \
   git ca-certificates \
-  python3-minimal \
+  python3-minimal libpython3-stdlib \
   unzip bzip2 zip zutils xz-utils libarchive13
 # last line is libraries needed by QEMU
 
 # install CMake
-COPY ./cmake-${cmake_version}-Linux-x86_64.tar.gz /tmp
-RUN tar xf /tmp/cmake-${cmake_version}-Linux-x86_64.tar.gz --strip 1 -C /usr/local && rm /tmp/cmake-${cmake_version}-Linux-x86_64.tar.gz
-RUN mkdir -p /cheri-sdk/bin
+ADD ./cmake-${cmake_version}-Linux-x86_64.tar.gz /usr/local
 
-# install clang SDK (and delete some unnecessary files as they are really big statically linked)
-COPY ./cheri-multi-master-clang-llvm.tar.xz /tmp
-RUN tar Jxf /tmp/cheri-multi-master-clang-llvm.tar.xz --strip-components 1 -C /cheri-sdk \
-  && rm -fv /usr/bin/ld \
-  && rm /tmp/cheri-multi-master-clang-llvm.tar.xz \
-  && (cd /cheri-sdk/bin && rm -vf clang-check opt llc lli llvm-lto2 llvm-lto llvm-c-test \
-         llvm-dsymutil llvm-dwp llvm-rtdyld *-llc \
-         llvm-extract llvm-xray llvm-split llvm-cov llvm-symbolizer llvm-dwarfdump \
-         llvm-link llvm-stress llvm-cxxdump llvm-cvtres llvm-cat llvm-as \
-         llvm-diff llvm-modextract llvm-tblgen llvm-dis llvm-pdbdump llvm-profdata \
-         llvm-opt-report llvm-bcanalyzer llvm-mcmarkup llvm-lib \
-         verify-uselistorder sanstats clang-offload-bundler c-index-test \
-         clang-import-test bugpoint sancov obj2yaml yaml2obj)
+# install clang SDK
+COPY ./cheri-clang-llvm.tar.xz /tmp
+ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
  
 # For now don't install cheribsd sysroot
 # COPY ./${target}-vanilla-jemalloc-cheribsd-world.tar.xz /tmp

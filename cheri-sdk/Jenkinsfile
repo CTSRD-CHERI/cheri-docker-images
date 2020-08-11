@@ -2,8 +2,8 @@
 properties([[$class: 'CopyArtifactPermissionProperty', projectNames: '*']])
 
 cmakeVersionMaj = 3
-cmakeVersionMin = 17
-cmakeVersionPat = 3
+cmakeVersionMin = 18
+cmakeVersionPat = 1
 cmakeVersionFull="${cmakeVersionMaj}.${cmakeVersionMin}.${cmakeVersionPat}"
 cmakeUrlDir = "v${cmakeVersionMaj}.${cmakeVersionMin}"
 cmakeArchive = "cmake-${cmakeVersionFull}-Linux-x86_64.tar.gz"
@@ -62,7 +62,7 @@ rm -rf cheribsd && mkdir -p cheribsd && tar Jxf mips-cap-table-pcrel-cheribsd-wo
 mv -f ./cheribsd/sysroot/usr/include ./cheribsd && rm -rf ./cheribsd/sysroot
 rm -f *.tar.xz
 '''
-            app = docker.build("ctsrd/cheri-compiler-explorer", "--no-cache -q .")
+            app = docker.build("ctsrd/cheri-compiler-explorer", "--pull --no-cache -q .")
         }
     }
     // TODO: make the pushing configurable
@@ -88,8 +88,7 @@ node("docker") {
         // copyArtifacts filter: 'binutils.tar.bz2', projectName: 'CHERI-binutils/label=linux/', selector: lastSuccessful()
         // copyArtifacts filter: 'elftoolchain.tar.xz', projectName: 'elftoolchain/label=linux/'
         // For clang copy the last successful build instead of the one with all tests passed for now since there are some flaky tests
-        copyArtifacts filter: 'cheri-multi-master-clang-llvm.tar.xz', projectName: 'CLANG-LLVM-master/CPU=cheri-multi,label=linux/', selector: lastSuccessful()
-        copyArtifacts projectName: 'qemu/qemu-cheri'
+        copyArtifacts filter: 'cheri-clang-llvm.tar.xz', projectName: 'CLANG-LLVM-linux/master', selector: lastSuccessful()
         sh "pwd && ls -la"
     }
     buildSDKImage()

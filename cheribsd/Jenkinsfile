@@ -15,11 +15,11 @@ mv -fv artifacts-${suffix}/* .
     }
     stage("Build CheriBSD (${suffix}) SDK image") {
         sh 'pwd && cp -f ../cheribsd/sdk/Dockerfile . && ls -la'
-        sdkImage = docker.build("ctsrd/cheribsd-sdk-${suffix}", ".")
+        sdkImage = docker.build("ctsrd/cheribsd-sdk-${suffix}", "--pull .")
     }
     stage("Build CheriBSD (${suffix}) QEMU image") {
         sh 'pwd && cp -f ../cheribsd/qemu/Dockerfile . && ls -la'
-        qemuImage = docker.build("ctsrd/cheribsd-qemu-${suffix}", ".")
+        qemuImage = docker.build("ctsrd/cheribsd-qemu-${suffix}", " --pull .")
     }
     stage("Push CheriBSD (${suffix}) SDK and QEMU image") {
         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {

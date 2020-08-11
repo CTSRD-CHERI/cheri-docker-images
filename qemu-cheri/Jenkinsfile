@@ -21,7 +21,7 @@ node("docker") {
         stage("Build image") {
             // sh "env | sort"
             sh "pwd && ls -la"
-            app = docker.build("ctsrd/qemu-cheri", "-q .")
+            app = docker.build("ctsrd/qemu-cheri", "--pull .")
             // Test that QEMU works:
             app.inside {
                 sh "env | sort"
