@@ -58,7 +58,9 @@ rm -rf cheribsd && mkdir -p cheribsd && tar Jxf ${sysrootArchive} --strip-compon
 mv -f ./cheribsd/sysroot/usr/include ./cheribsd && rm -rf ./cheribsd/sysroot
 rm -f ${sysrootArchive}
 """
-            app = docker.build("ctsrd/cheri-compiler-explorer", "--pull --no-cache .")
+            // To force an update of nodejs+compiler-explorer:
+            // app = docker.build("ctsrd/cheri-compiler-explorer", "--pull --no-cache .")
+            app = docker.build("ctsrd/cheri-compiler-explorer", "--pull .")
         }
     }
     // TODO: make the pushing configurable

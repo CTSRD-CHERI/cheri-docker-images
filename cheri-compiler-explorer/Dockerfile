@@ -10,7 +10,6 @@ RUN echo "*** Installing node.js 12 ***" \
     && DEBIAN_FRONTEND=noninteractive curl -sL https://deb.nodesource.com/setup_12.x | bash - \
     && apt-get install -y nodejs
 RUN useradd gcc-user && mkdir -p /compiler-explorer /home/gcc-user && chown -R gcc-user /compiler-explorer && chown gcc-user /home/gcc-user
-RUN su - gcc-user -c "git clone https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && make -C /compiler-explorer dist"
 COPY *.local.properties /compiler-explorer/etc/config/
 
 
@@ -24,6 +23,9 @@ RUN ln -sfn /cheri-sdk/bin/ld.lld /cheri-sdk/bin/ld
 WORKDIR /compiler-explorer
 ENV HOME /home/gcc-user
 USER gcc-user
+# Build newest version of compiler-explorer
+RUN su - gcc-user -c "git clone https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && make -C /compiler-explorer dist"
+
 
 ENTRYPOINT [ "make" ]
 EXPOSE 10240
