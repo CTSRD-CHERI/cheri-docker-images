@@ -16,7 +16,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 ADD ./cmake-${cmake_version}-Linux-x86_64.tar.gz /usr/local
 
 # install clang SDK
-COPY ./cheri-clang-llvm.tar.xz /tmp
 ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
  
 # For now don't install cheribsd sysroot

@@ -51,14 +51,11 @@ def buildCompilerExplorer() {
     stage("Build compiler explorer") {
         dir ('cheri-compiler-explorer') {
             // Get the CheriBSD headers by fetching the MIPS SDK:
-            copyArtifacts filter: 'mips-cap-table-pcrel-cheribsd-world.tar.xz', projectName: 'CHERIBSD-WORLD/CPU=mips,ISA=cap-table-pcrel/', selector: lastSuccessful()
+            copyArtifacts filter: 'artifacts-amd64/cheribsd-sysroot.tar.xz', projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
             sh '''
 rm -rf llvm && mkdir -p llvm && tar Jxf ../cheri-sdk/cheri-multi-master-clang-llvm.tar.xz --strip-components 1 -C llvm
-rm -f ./llvm/lib/*.a ./llvm/lib/*.so
-rm -rf ./llvm/lib/cmake
-rm -rf ./llvm/lib/*.so.*
-pwd && find .
-rm -rf cheribsd && mkdir -p cheribsd && tar Jxf mips-cap-table-pcrel-cheribsd-world.tar.xz --strip-components 1 -C cheribsd
+pwd && find llvm
+rm -rf cheribsd && mkdir -p cheribsd && tar Jxf artifacts-amd64/cheribsd-sysroot.tar.xz --strip-components 1 -C cheribsd
 mv -f ./cheribsd/sysroot/usr/include ./cheribsd && rm -rf ./cheribsd/sysroot
 rm -f *.tar.xz
 '''

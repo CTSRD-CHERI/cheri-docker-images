@@ -15,8 +15,9 @@ COPY *.local.properties /compiler-explorer/etc/config/
 
 
 # TODO: llvm/bin/llc llvm/bin/opt
-COPY llvm/bin/clang* llvm/bin/ld.lld llvm/bin/lld llvm/bin/llvm-objdump llvm/bin/llvm-mca llvm/bin/llvm-readobj llvm/bin/llvm-readelf llvm/bin/llvm-cxxfilt /cheri-sdk/bin/
-COPY llvm/lib/clang /cheri-sdk/lib/clang
+#COPY llvm/bin/clang* llvm/bin/ld.lld llvm/bin/lld llvm/bin/llvm-objdump llvm/bin/llvm-mca llvm/bin/llvm-readobj llvm/bin/llvm-readelf llvm/bin/llvm-cxxfilt /cheri-sdk/bin/
+#COPY llvm/lib/clang /cheri-sdk/lib/clang
+ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
 COPY cheribsd/include /cheri-sdk/sysroot/usr/include
 RUN ln -sfn /cheri-sdk/bin/ld.lld /cheri-sdk/bin/ld
 
