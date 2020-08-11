@@ -12,9 +12,9 @@ def buildSDKImage() {
     def app
     stage("Build image") {
         dir ('cheri-sdk') {
-            sh 'cp -f ../cmake-*.tar.gz . && pwd && ls -la'
+            sh "cp -f ../cheri-clang-llvm.tar.xz ../${cmakeArchive} . && pwd && ls -la"
             /* This builds the actual image; synonymous to docker build on the command line */
-            app = docker.build("ctsrd/cheri-sdk", "-q --pull --build-arg cmake_version=${cmakeVersionFull} .")
+            app = docker.build("ctsrd/cheri-sdk", "--pull --build-arg cmake_version=${cmakeVersionFull} .")
         }
     }
 
@@ -50,15 +50,15 @@ def buildCompilerExplorer() {
     stage("Build compiler explorer") {
         dir ('cheri-compiler-explorer') {
             // Get the CheriBSD headers by fetching the MIPS SDK:
-            copyArtifacts filter: 'artifacts-amd64/cheribsd-sysroot.tar.xz', projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
-            sh '''
-rm -rf llvm && mkdir -p llvm && tar Jxf ../cheri-sdk/cheri-clang-llvm.tar.xz --strip-components 1 -C llvm
-pwd && find llvm
-rm -rf cheribsd && mkdir -p cheribsd && tar Jxf artifacts-amd64/cheribsd-sysroot.tar.xz --strip-components 1 -C cheribsd
+            def sysrootArchive = 'artifacts-amd64/cheribsd-sysroot.tar.xz'
+            copyArtifacts filter: sysrootArchive, projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
+            sh """
+cp -f ../cheri-clang-llvm.tar.xz .
+rm -rf cheribsd && mkdir -p cheribsd && tar Jxf ${sysrootArchive} --strip-components 1 -C cheribsd
 mv -f ./cheribsd/sysroot/usr/include ./cheribsd && rm -rf ./cheribsd/sysroot
-rm -f *.tar.xz
-'''
-            app = docker.build("ctsrd/cheri-compiler-explorer", "--pull --no-cache -q .")
+rm -f ${sysrootArchive}
+"""
+            app = docker.build("ctsrd/cheri-compiler-explorer", "--pull --no-cache .")
         }
     }
     // TODO: make the pushing configurable
@@ -89,10 +89,4 @@ node("docker") {
     }
     buildSDKImage()
     buildCompilerExplorer()
-    // don't use for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
-    //stage('Build SDK docker images') {
-    //    parallel targets.collectEntries{
-    //       [(it): { buildSDKImage(it) }]
-    //    }
-    //}
 }
