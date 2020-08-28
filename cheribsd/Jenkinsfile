@@ -21,14 +21,6 @@ mv -fv artifacts-${suffix}/* .
         sh 'pwd && cp -f ../cheribsd/qemu/Dockerfile . && ls -la'
         qemuImage = docker.build("ctsrd/cheribsd-qemu-${suffix}", " --pull .")
     }
-    stage("Push CheriBSD (${suffix}) SDK and QEMU image") {
-        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-            sdkImage.push("${env.BUILD_NUMBER}")
-            sdkImage.push("latest")
-            qemuImage.push("${env.BUILD_NUMBER}")
-            qemuImage.push("latest")
-        }
-    }
     stage("Test CheriBSD (${suffix}) SDK image") {
         sdkImage.inside {
             sh "env | sort"
@@ -39,7 +31,7 @@ mv -fv artifacts-${suffix}/* .
 
         }
     }
-    stage("Test CheriBSD (${suffix}) SDK image") {
+    stage("Test CheriBSD (${suffix}) QEMU image") {
         // TODO: should test QEMU booting cheribsd
         qemuImage.inside {
             sh "env | sort"
@@ -53,6 +45,14 @@ do
     qemu-system-$i --help > /dev/null
 done
 '''
+        }
+    }
+    stage("Push CheriBSD (${suffix}) SDK and QEMU image") {
+        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+            sdkImage.push("${env.BUILD_NUMBER}")
+            sdkImage.push("latest")
+            qemuImage.push("${env.BUILD_NUMBER}")
+            qemuImage.push("latest")
         }
     }
 }
