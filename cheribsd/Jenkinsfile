@@ -25,7 +25,7 @@ mv -fv artifacts-${suffix}/* .
         sdkImage.inside {
             sh "env | sort"
             sh "clang++ --version"
-            sh "cheribuild.py --version"
+            sh "cheribuild.py --list-targets"
             sh "ls -la /cheri-sdk/bin"
             sh "ls -la /cheri-sdk"
 
@@ -35,7 +35,7 @@ mv -fv artifacts-${suffix}/* .
         // TODO: should test QEMU booting cheribsd
         qemuImage.inside {
             sh "env | sort"
-            sh "cheribuild.py --version"
+            sh "cheribuild.py --list-targets"
             sh "ls -la /cheri-sdk/bin"
             sh "ls -la /cheri-sdk"
             '''
