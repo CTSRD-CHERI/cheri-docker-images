@@ -4,4 +4,4 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/sh -c '(/bin/echo "Subject: %I failed"; /bin/systemctl status %I) | /usr/sbin/ssmtp "-FCHERI Compiler Explorer"  -v cl-ctsrd-infra@lists.cam.ac.uk'
+ExecStart=/bin/sh -c '(/bin/echo "Subject: %i failed"; /bin/systemctl status %i) | /usr/sbin/ssmtp "-FCHERI Compiler Explorer"  -v cl-ctsrd-infra@lists.cam.ac.uk'

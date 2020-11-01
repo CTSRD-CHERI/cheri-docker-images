@@ -1,0 +1,7 @@
+[Unit]
+Description=Run docker system prune
+Wants=docker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/docker system prune --all --force
