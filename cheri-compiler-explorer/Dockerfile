@@ -12,7 +12,11 @@ ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
 ADD ./morello-clang-llvm.tar.xz /morello-sdk
 COPY cheribsd/include /cheri-sdk/sysroot/usr/include
 # TODO: separate sysroots
-RUN ln -sfn /cheri-sdk/sysroot /morello-sdk/sysroot && /cheri-sdk/bin/clang --version && /morello-sdk/bin/clang --version
+RUN ln -sfn /cheri-sdk/sysroot /morello-sdk/sysroot-morello-purecap && \
+    ln -sfn /cheri-sdk/sysroot /cheri-sdk/sysroot-riscv64-purecap && \
+    ln -sfn /cheri-sdk/sysroot /cheri-sdk/sysroot-mips64-purecap
+# Sanity check that compilers work
+RUN /cheri-sdk/bin/clang --version && /morello-sdk/bin/clang --version
 
 ENV HOME /home/gcc-user
 USER gcc-user
