@@ -56,13 +56,13 @@ def buildCompilerExplorer() {
 cp -f ../cheri-clang-llvm.tar.xz .
 # Extract to a subdir to only copy the includes
 for i in mips64-purecap riscv64-purecap; do
-    rm -rf "sysroot-${i}" && mkdir -p "sysroot-${i}/tmp"
-    tar Jxf "artifacts-${i}/cheribsd-sysroot.tar.xz" --strip-components 1 -C "sysroot-${i}"
-    mkdir "sysroot-${i}/usr"
-    mv "sysroot-${i}/sysroot/usr/include" "sysroot-${i}/usr/include"
+    rm -rf "sysroot-\${i}" && mkdir -p "sysroot-\${i}/tmp"
+    tar Jxf "artifacts-\${i}/cheribsd-sysroot.tar.xz" --strip-components 1 -C "sysroot-\${i}"
+    mkdir "sysroot-\${i}/usr"
+    mv "sysroot-\${i}/sysroot/usr/include" "sysroot-\${i}/usr/include"
     # TODO: also keep some of the libraries?
-    rm -rf "sysroot-${i}/sysroot/"
-    rm -f "artifacts-${i}/cheribsd-sysroot.tar.xz"
+    rm -rf "sysroot-\${i}/sysroot/"
+    rm -f "artifacts-\${i}/cheribsd-sysroot.tar.xz"
 done
 """
             // To force an update of nodejs+compiler-explorer:
