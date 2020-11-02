@@ -2,7 +2,7 @@
 version: "3"
 services:
     letsencrypt:
-        image: linuxserver/letsencrypt
+        image: linuxserver/swag
         container_name: letsencrypt
         cap_add:
             - NET_ADMIN
