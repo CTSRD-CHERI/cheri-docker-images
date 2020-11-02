@@ -13,15 +13,14 @@ COPY sysroot-riscv64-purecap /cheri-sdk/sysroot-riscv64-purecap
 RUN ln -sfn /cheri-sdk/sysroot-riscv64-purecap /morello-sdk/sysroot-morello-purecap
 # Sanity check that compilers work
 RUN /cheri-sdk/bin/clang --version && /morello-sdk/bin/clang --version
-COPY *.local.properties /compiler-explorer/etc/config/
 
 ENV HOME /home/gcc-user
 USER gcc-user
 # Build newest version of compiler-explorer (and ensure that we do the clone as gcc-user)
 RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG USER: $(whoami)"; false; fi && \
       git clone --depth=1 https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && make -C /compiler-explorer dist
-USER root
 
+COPY *.local.properties /compiler-explorer/etc/config/
 WORKDIR /compiler-explorer
 
 
