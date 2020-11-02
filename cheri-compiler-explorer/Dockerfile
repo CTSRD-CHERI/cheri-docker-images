@@ -9,8 +9,10 @@ RUN useradd gcc-user && mkdir -p /compiler-explorer /home/gcc-user && chown -R g
 #COPY llvm/bin/clang* llvm/bin/ld.lld llvm/bin/lld llvm/bin/llvm-objdump llvm/bin/llvm-mca llvm/bin/llvm-readobj llvm/bin/llvm-readelf llvm/bin/llvm-cxxfilt /cheri-sdk/bin/
 #COPY llvm/lib/clang /cheri-sdk/lib/clang
 ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
+ADD ./morello-clang-llvm.tar.xz /morello-sdk
 COPY cheribsd/include /cheri-sdk/sysroot/usr/include
-RUN ln -sfn /cheri-sdk/bin/ld.lld /cheri-sdk/bin/ld
+# TODO: separate sysroots
+RUN ln -sfn /cheri-sdk/sysroot /morello-sdk/sysroot && /cheri-sdk/bin/clang --version && /morello-sdk/bin/clang --version
 
 ENV HOME /home/gcc-user
 USER gcc-user

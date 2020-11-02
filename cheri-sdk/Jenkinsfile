@@ -52,6 +52,7 @@ def buildCompilerExplorer() {
             // Get the CheriBSD headers by fetching the MIPS SDK:
             def sysrootArchive = 'artifacts-amd64/cheribsd-sysroot.tar.xz'
             copyArtifacts filter: sysrootArchive, projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
+            copyArtifacts filter: 'morello-clang-llvm.tar.xz', projectName: 'Morello-LLVM-linux', selector: lastSuccessful()
             sh """
 cp -f ../cheri-clang-llvm.tar.xz .
 rm -rf cheribsd && mkdir -p cheribsd && tar Jxf ${sysrootArchive} --strip-components 1 -C cheribsd
