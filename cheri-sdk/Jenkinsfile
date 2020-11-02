@@ -50,14 +50,20 @@ def buildCompilerExplorer() {
     stage("Build compiler explorer") {
         dir ('cheri-compiler-explorer') {
             // Get the CheriBSD headers by fetching the MIPS SDK:
-            def sysrootArchive = 'artifacts-amd64/cheribsd-sysroot.tar.xz'
-            copyArtifacts filter: sysrootArchive, projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
+            copyArtifacts filter: 'artifacts-mips64-purecap/cheribsd-sysroot.tar.xz,artifacts-riscv64-purecap/cheribsd-sysroot.tar.xz', projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
             copyArtifacts filter: 'morello-clang-llvm.tar.xz', projectName: 'Morello-LLVM-linux', selector: lastSuccessful()
             sh """
 cp -f ../cheri-clang-llvm.tar.xz .
-rm -rf cheribsd && mkdir -p cheribsd && tar Jxf ${sysrootArchive} --strip-components 1 -C cheribsd
-mv -f ./cheribsd/sysroot/usr/include ./cheribsd && rm -rf ./cheribsd/sysroot
-rm -f ${sysrootArchive}
+# Extract to a subdir to only copy the includes
+for i in mips64-purecap riscv64-purecap; do
+    rm -rf "sysroot-${i}" && mkdir -p "sysroot-${i}/tmp"
+    tar Jxf "artifacts-${i}/cheribsd-sysroot.tar.xz" --strip-components 1 -C "sysroot-${i}"
+    mkdir "sysroot-${i}/usr"
+    mv "sysroot-${i}/sysroot/usr/include" "sysroot-${i}/usr/include"
+    # TODO: also keep some of the libraries?
+    rm -rf "sysroot-${i}/sysroot/"
+    rm -f "artifacts-${i}/cheribsd-sysroot.tar.xz"
+done
 """
             // To force an update of nodejs+compiler-explorer:
             // app = docker.build("ctsrd/cheri-compiler-explorer", "--pull --no-cache .")
