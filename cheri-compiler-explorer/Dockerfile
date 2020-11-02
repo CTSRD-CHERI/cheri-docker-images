@@ -1,14 +1,8 @@
-FROM ubuntu:18.04
+# Note: leap 15.2 ships with old glibc so can't run our clang
+FROM opensuse/tumbleweed:latest
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update \
-    && apt-get install -y wget curl make git ca-certificates libxml2 \
-    && apt-get autoremove --purge -y \
-    && apt-get autoclean -y \
-    && rm -rf /var/cache/apt/* /tmp/*
-RUN echo "*** Installing node.js 12 ***" \
-    && DEBIAN_FRONTEND=noninteractive curl -sL https://deb.nodesource.com/setup_12.x | bash - \
-    && apt-get install -y nodejs
+RUN zypper in -y git nodejs12 npm12 make which libncurses5
 RUN useradd gcc-user && mkdir -p /compiler-explorer /home/gcc-user && chown -R gcc-user /compiler-explorer && chown gcc-user /home/gcc-user
 
 # TODO: llvm/bin/llc llvm/bin/opt
@@ -22,7 +16,7 @@ ENV HOME /home/gcc-user
 USER gcc-user
 # Build newest version of compiler-explorer (and ensure that we do the clone as gcc-user)
 RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG USER: $(whoami)"; false; fi && \
-      git clone https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && make -C /compiler-explorer dist
+      git clone --depth=1 https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && make -C /compiler-explorer dist
 WORKDIR /compiler-explorer
 COPY *.local.properties /compiler-explorer/etc/config/
 
