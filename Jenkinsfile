@@ -42,8 +42,8 @@ def buildSDKImage(String cpu) {
         }
     }
 }
-timeout(120) {
-node("docker") {
+
+def doBuild() {
     stage('Clone repository') {
         /* Let's make sure we have the repository cloned to our workspace */
         checkout scm
@@ -99,4 +99,16 @@ node("docker") {
         sh "rm -rf binutils.tar.bz *-build"
     }
 }
+
+
+try {
+    timeout(120) {
+        node("docker") {
+            doBuild()
+        }
+    }
+} catch (e) {
+    slackSend channel: '#jenkins', color: '#FF9FA1',
+        message: "${env.JOB_NAME} ${env.BUILD_NUMBER} failed: ${e}! (<${env.BUILD_URL}|Open>)",
+        tokenCredentialId: 'slack-token'
 }
