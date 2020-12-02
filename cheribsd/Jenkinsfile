@@ -89,4 +89,6 @@ try {
     slackSend channel: '#jenkins', color: '#FF9FA1',
         message: "${env.JOB_NAME} ${env.BUILD_NUMBER} failed: ${e}! (<${env.BUILD_URL}|Open>)",
         tokenCredentialId: 'slack-token'
+    currentBuild.result = 'FAILURE'
+    throw e
 }
