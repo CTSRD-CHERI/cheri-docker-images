@@ -2,7 +2,7 @@
 FROM opensuse/tumbleweed:latest
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
-RUN zypper in -y git nodejs12 npm12 make which libncurses5
+RUN zypper in -y git nodejs-default npm-default make which libncurses5
 RUN useradd gcc-user && mkdir -p /compiler-explorer /home/gcc-user && chown -R gcc-user /compiler-explorer && chown gcc-user /home/gcc-user
 
 ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
