@@ -2,8 +2,9 @@
 FROM opensuse/tumbleweed:latest
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
-RUN zypper in -y git nodejs-default npm-default make which libncurses5
-RUN useradd gcc-user && mkdir -p /compiler-explorer /home/gcc-user && chown -R gcc-user /compiler-explorer && chown gcc-user /home/gcc-user
+RUN zypper in -y git nodejs-default npm-default make which libncurses5 sudo
+RUN useradd --uid 1000 gcc-user && mkdir -p /compiler-explorer /home/gcc-user && \
+    chown -R gcc-user /compiler-explorer && chown gcc-user /home/gcc-user
 
 ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
 ADD ./morello-clang-llvm.tar.xz /morello-sdk
@@ -24,6 +25,10 @@ COPY *.local.properties /compiler-explorer/etc/config/
 WORKDIR /compiler-explorer
 VOLUME ["/compiler-explorer/lib/storage/data"]
 
-ENTRYPOINT [ "make" ]
+# We have to start as root to chown /compiler-explorer/lib/storage/data
+# since docker volumes are always owned by root
+USER root
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT [ "/entrypoint.sh" ]
 EXPOSE 10240
 CMD ["run"]
