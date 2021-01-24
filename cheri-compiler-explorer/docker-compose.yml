@@ -33,6 +33,8 @@ services:
         image: ctsrd/cheri-compiler-explorer
         container_name: compiler-explorer
         restart: on-failure
+        volumes:
+            - compiler-explorer-storage:/compiler-explorer/lib/storage/data
     watchtower:
         image: containrrr/watchtower
         command: --cleanup
@@ -41,3 +43,6 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
             # - /root/.docker/config.json:/config.json
         restart: on-failure
+
+volumes:
+    compiler-explorer-storage:

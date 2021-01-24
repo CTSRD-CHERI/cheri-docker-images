@@ -22,7 +22,7 @@ RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG U
 
 COPY *.local.properties /compiler-explorer/etc/config/
 WORKDIR /compiler-explorer
-
+VOLUME ["/compiler-explorer/lib/storage/data"]
 
 ENTRYPOINT [ "make" ]
 EXPOSE 10240
