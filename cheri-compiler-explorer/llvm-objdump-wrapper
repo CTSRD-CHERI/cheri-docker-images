@@ -20,4 +20,4 @@ while [ $# -gt 0 ]; do
 	esac
 done
 
-echo exec "$DIR/llvm-objdump" "${ARGS[@]}"
+exec "$DIR/llvm-objdump" "${ARGS[@]}"
