@@ -33,8 +33,9 @@ RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG U
       git clone --depth=1 https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && make -C /compiler-explorer dist
 
 COPY *.local.properties /compiler-explorer/etc/config/
-# jmp is x86-only, but b works for all of AArch64, MIPS and RISC-V
-RUN sed -i 's/\<jmp\>/b/g' /compiler-explorer/examples/assembly/default.asm
+# Upstream's example is x86-only (uses jmp); replace with a more portable
+# default that just has a nop.
+COPY default.asm /compiler-explorer/examples/assembly/default.asm
 WORKDIR /compiler-explorer
 VOLUME ["/compiler-explorer/lib/storage/data"]
 
