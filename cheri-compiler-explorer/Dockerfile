@@ -2,7 +2,7 @@ FROM ubuntu:20.04
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get -y update \
- && DEBIAN_FRONTEND=noninteractive apt-get -y install git nodejs npm make sudo \
+ && DEBIAN_FRONTEND=noninteractive apt-get -y install git nodejs npm make sudo ca-certificates libxml2 libncurses5 \
  && apt-get autoremove --purge -y \
  && apt-get autoclean -y \
  && rm -rf /var/cache/apt/* /tmp/*
