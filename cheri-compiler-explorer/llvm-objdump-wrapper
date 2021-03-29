@@ -1,0 +1,23 @@
+#!/bin/bash
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
+ARGS=()
+
+# Strip GNU-only --insn-width
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--insn-width=*)
+		shift
+		;;
+	--insn-width)
+		shift; shift
+		;;
+	*)
+		ARGS+=("$1")
+		shift
+		;;
+	esac
+done
+
+echo exec "$DIR/llvm-objdump" "${ARGS[@]}"
