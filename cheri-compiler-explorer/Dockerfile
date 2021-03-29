@@ -4,7 +4,7 @@ LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 RUN apt-get -y update \
  && DEBIAN_FRONTEND=noninteractive apt-get -y install git curl make sudo ca-certificates libxml2 libncurses5
 
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_12.x | bash -
 RUN apt-get -y update \
  && DEBIAN_FRONTEND=noninteractive apt-get -y install nodejs
 
