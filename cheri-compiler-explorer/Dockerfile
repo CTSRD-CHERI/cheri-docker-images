@@ -2,10 +2,16 @@ FROM ubuntu:20.04
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get -y update \
- && DEBIAN_FRONTEND=noninteractive apt-get -y install git nodejs npm make sudo ca-certificates libxml2 libncurses5 \
- && apt-get autoremove --purge -y \
+ && DEBIAN_FRONTEND=noninteractive apt-get -y install git curl make sudo ca-certificates libxml2 libncurses5
+
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get -y update \
+ && DEBIAN_FRONTEND=noninteractive apt-get -y install nodejs
+
+RUN apt-get autoremove --purge -y \
  && apt-get autoclean -y \
  && rm -rf /var/cache/apt/* /tmp/*
+
 RUN useradd --uid 1000 gcc-user && mkdir -p /compiler-explorer /home/gcc-user && \
     chown -R gcc-user /compiler-explorer && chown gcc-user /home/gcc-user
 
