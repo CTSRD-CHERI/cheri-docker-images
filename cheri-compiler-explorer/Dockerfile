@@ -1,8 +1,11 @@
-# Note: leap 15.2 ships with old glibc so can't run our clang
-FROM opensuse/tumbleweed:latest
+FROM ubuntu:20.04
 LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
-RUN zypper in -y git nodejs-default npm-default make which libncurses5 sudo
+RUN apt-get -y update \
+ && DEBIAN_FRONTEND=noninteractive apt-get -y install git nodejs npm make which sudo \
+ && apt-get autoremove --purge -y \
+ && apt-get autoclean -y \
+ && rm -rf /var/cache/apt/* /tmp/*
 RUN useradd --uid 1000 gcc-user && mkdir -p /compiler-explorer /home/gcc-user && \
     chown -R gcc-user /compiler-explorer && chown gcc-user /home/gcc-user
 
