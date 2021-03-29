@@ -54,14 +54,10 @@ def buildCompilerExplorer() {
             copyArtifacts filter: 'morello-clang-llvm.tar.xz', projectName: 'Morello-LLVM-linux', selector: lastSuccessful()
             sh """
 cp -f ../cheri-clang-llvm.tar.xz .
-# Extract to a subdir to only copy the includes
 for i in mips64-purecap riscv64-purecap; do
-    rm -rf "sysroot-\${i}" && mkdir -p "sysroot-\${i}/tmp"
-    tar Jxf "artifacts-\${i}/cheribsd-sysroot.tar.xz" --strip-components 1 -C "sysroot-\${i}"
-    mkdir "sysroot-\${i}/usr"
-    mv "sysroot-\${i}/sysroot/usr/include" "sysroot-\${i}/usr/include"
-    # TODO: also keep some of the libraries?
-    rm -rf "sysroot-\${i}/sysroot/"
+    rm -rf "sysroot-\${i}"
+    tar Jxf "artifacts-\${i}/cheribsd-sysroot.tar.xz"
+    mv "sysroot" "sysroot-\${i}"
     rm -f "artifacts-\${i}/cheribsd-sysroot.tar.xz"
 done
 """
