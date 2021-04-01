@@ -19,8 +19,6 @@ ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
 ADD ./morello-clang-llvm.tar.xz /morello-sdk
 COPY sysroot-mips64-purecap /cheri-sdk/sysroot-mips64-purecap
 COPY sysroot-riscv64-purecap /cheri-sdk/sysroot-riscv64-purecap
-COPY llvm-objdump-wrapper /cheri-sdk/bin/llvm-objdump-wrapper
-COPY llvm-objdump-wrapper /morello-sdk/bin/llvm-objdump-wrapper
 # TODO: Add Morello sysroot
 RUN ln -sfn /cheri-sdk/sysroot-riscv64-purecap /morello-sdk/sysroot-morello-purecap
 # Sanity check that compilers work
