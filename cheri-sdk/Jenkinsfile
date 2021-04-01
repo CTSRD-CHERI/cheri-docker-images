@@ -49,12 +49,12 @@ def buildCompilerExplorer() {
     def app
     stage("Build compiler explorer") {
         dir ('cheri-compiler-explorer') {
-            // Get the CheriBSD headers by fetching the MIPS SDK:
-            copyArtifacts filter: 'artifacts-mips64-purecap/cheribsd-sysroot.tar.xz,artifacts-riscv64-purecap/cheribsd-sysroot.tar.xz', projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
+            // Get the CheriBSD sysroots by fetching the SDKs:
+            copyArtifacts filter: 'artifacts-mips64-purecap/cheribsd-sysroot.tar.xz,artifacts-riscv64-purecap/cheribsd-sysroot.tar.xz,artifacts-morello-purecap/cheribsd-sysroot.tar.xz', projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
             copyArtifacts filter: 'morello-clang-llvm.tar.xz', projectName: 'Morello-LLVM-linux', selector: lastSuccessful()
             sh """
 cp -f ../cheri-clang-llvm.tar.xz .
-for i in mips64-purecap riscv64-purecap; do
+for i in mips64-purecap riscv64-purecap morello-purecap; do
     rm -rf "sysroot-\${i}"
     tar Jxf "artifacts-\${i}/cheribsd-sysroot.tar.xz"
     mv "sysroot" "sysroot-\${i}"
