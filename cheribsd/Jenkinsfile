@@ -8,7 +8,7 @@ def buildCheriBSDImage(String suffix) {
         sh """
 echo ${suffix}
 find .
-for f in cheribsd-${suffix}.img.xz kernel.xz; do
+for f in cheribsd-sysroot.tar.xz cheribsd-${suffix}.img.xz kernel.xz; do
     mv -fv artifacts-${suffix}/\$f .
 done
 """
