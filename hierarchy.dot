@@ -1,0 +1,5 @@
+digraph {
+	"qemu-cheri" -> "cheri-sdk"
+	"cheri-sdk" -> "cheribsd-sdk-<arch>"
+	"qemu-cheri" -> "cheribsd-qemu-<arch>"
+}
