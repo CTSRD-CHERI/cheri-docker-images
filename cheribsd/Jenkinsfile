@@ -1,6 +1,7 @@
 def buildCheriBSDImage(String suffix) {
     def sdkImage
     def qemuImage
+    def sdkQemuImage
     stage("Copy CheriBSD ${suffix} artifact") {
         echo "Copying CheriBSD artifacts (artifacts-${suffix}/**)"
         copyArtifacts filter: "artifacts-${suffix}/**", projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
@@ -18,6 +19,10 @@ mv -fv artifacts-${suffix}/* .
     stage("Build CheriBSD (${suffix}) QEMU image") {
         sh 'pwd && cp -f ../cheribsd/qemu/Dockerfile . && ls -la'
         qemuImage = docker.build("ctsrd/cheribsd-qemu-${suffix}", " --pull .")
+    }
+    stage("Build CheriBSD (${suffix}) SDK+QEMU image") {
+        sh 'pwd && cp -f ../cheribsd/sdk-qemu/Dockerfile . && ls -la'
+        sdkQemuImage = docker.build("ctsrd/cheribsd-sdk-qemu-${suffix}", " --build-arg TARGET_ARCH=${suffix} --pull .")
     }
     stage("Test CheriBSD (${suffix}) SDK image") {
         sdkImage.inside {
@@ -45,12 +50,31 @@ done
 '''
         }
     }
-    stage("Push CheriBSD (${suffix}) SDK and QEMU image") {
+    stage("Test CheriBSD (${suffix}) SDK+QEMU image") {
+        // TODO: should test QEMU booting cheribsd
+        sdkQemuImage.inside {
+            sh "env | sort"
+            sh "clang++ --version"
+            sh "cheribuild.py --list-targets"
+            sh "ls -la /cheri-sdk/bin"
+            sh "ls -la /cheri-sdk"
+            '''
+for i in cheri128 riscv64cheri aarch64 x86_64;
+do
+    which qemu-system-$i
+    qemu-system-$i --help > /dev/null
+done
+'''
+        }
+    }
+    stage("Push CheriBSD (${suffix}) SDK, QEMU and SDK+QEMU images") {
         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
             sdkImage.push("${env.BUILD_NUMBER}")
             sdkImage.push("latest")
             qemuImage.push("${env.BUILD_NUMBER}")
             qemuImage.push("latest")
+            sdkQemuImage.push("${env.BUILD_NUMBER}")
+            sdkQemuImage.push("latest")
         }
     }
 }
