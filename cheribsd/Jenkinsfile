@@ -8,8 +8,9 @@ def buildCheriBSDImage(String suffix) {
         sh """
 echo ${suffix}
 find .
-mv -fv artifacts-${suffix}/* .
-# tar xJf cheribsd-sysroot.tar.xz
+for f in cheribsd-${suffix}.img.xz kernel.xz; do
+    mv -fv artifacts-${suffix}/\$f .
+done
 """
     }
     stage("Build CheriBSD (${suffix}) SDK image") {
