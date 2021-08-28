@@ -1,5 +1,4 @@
 FROM ubuntu:20.04
-LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get -y update \
  && DEBIAN_FRONTEND=noninteractive apt-get -y install git curl make sudo ca-certificates libxml2 libncurses5

@@ -1,5 +1,4 @@
 FROM ubuntu:18.04
-LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     libpixman-1-0 libjpeg8 libpng16-16 libnuma1 libxml2 libsdl1.2debian libglib2.0-0 samba \

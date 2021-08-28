@@ -4,7 +4,6 @@ ARG TARGET_ARCH
 FROM ctsrd/cheribsd-qemu-${TARGET_ARCH}:latest
 
 FROM ctsrd/cheribsd-sdk-${TARGET_ARCH}:latest
-LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 COPY --from=0 /cheri-sdk /cheri-sdk
 CMD ["bash"]

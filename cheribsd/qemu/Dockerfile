@@ -1,5 +1,4 @@
 FROM ctsrd/qemu-cheri:latest
-LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 ENV PATH=/cheri-sdk/bin:/cheri-sdk/cheribuild:$PATH
 # install disk images and kernels:

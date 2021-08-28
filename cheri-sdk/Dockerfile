@@ -1,5 +1,4 @@
 FROM ctsrd/qemu-cheri:latest
-LABEL maintainer="Alexander.Richardson@cl.cam.ac.uk"
 
 ARG cmake_version
 
