@@ -39,6 +39,11 @@ def doBuild() {
         checkout scm
         sh "pwd"
     }
+    stage("Copy artifacts") {
+        // For clang copy the last successful build instead of the one with all tests passed for now since there are some flaky tests
+        copyArtifacts filter: 'cheri-clang-llvm.tar.xz', projectName: 'CLANG-LLVM-linux/master', selector: lastSuccessful()
+        sh "pwd && ls -la"
+    }
     buildCompilerExplorer()
 }
 
