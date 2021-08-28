@@ -14,7 +14,8 @@ def buildSDKImage() {
         dir ('cheri-sdk') {
             sh "cp -f ../cheri-clang-llvm.tar.xz ../${cmakeArchive} . && pwd && ls -la"
             /* This builds the actual image; synonymous to docker build on the command line */
-            app = docker.build("ctsrd/cheri-sdk", "--pull --build-arg cmake_version=${cmakeVersionFull} .")
+            // We clone cheribuild with a RUN command so need --no-cache
+            app = docker.build("ctsrd/cheri-sdk", "--pull --no-cache --build-arg cmake_version=${cmakeVersionFull} .")
         }
     }
 

@@ -17,9 +17,8 @@ for i in mips64-purecap riscv64-purecap morello-purecap; do
     rm -f "artifacts-\${i}/cheribsd-sysroot.tar.xz"
 done
 """
-            // To force an update of nodejs+compiler-explorer:
-            // app = docker.build("ctsrd/cheri-compiler-explorer", "--pull --no-cache .")
-            app = docker.build("ctsrd/cheri-compiler-explorer", "--pull .")
+            // We clone the source with a RUN command so need --no-cache
+            app = docker.build("ctsrd/cheri-compiler-explorer", "--pull --no-cache .")
         }
     }
     // TODO: make the pushing configurable

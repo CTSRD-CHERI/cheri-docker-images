@@ -19,7 +19,8 @@ done
     }
     stage("Build CheriBSD (${suffix}) QEMU image") {
         sh 'pwd && cp -f ../cheribsd/qemu/Dockerfile . && ls -la'
-        qemuImage = docker.build("ctsrd/cheribsd-qemu-${suffix}", " --pull .")
+        // We clone cheribuild with a RUN command so need --no-cache
+        qemuImage = docker.build("ctsrd/cheribsd-qemu-${suffix}", " --pull --no-cache .")
     }
     stage("Build CheriBSD (${suffix}) SDK+QEMU image") {
         sh 'pwd && cp -f ../cheribsd/sdk-qemu/Dockerfile . && ls -la'
