@@ -24,7 +24,12 @@ done
     }
     stage("Build CheriBSD (${suffix}) SDK+QEMU image") {
         sh 'pwd && cp -f ../cheribsd/sdk-qemu/Dockerfile . && ls -la'
-        sdkQemuImage = docker.build("ctsrd/cheribsd-sdk-qemu-${suffix}", " --build-arg TARGET_ARCH=${suffix} --pull .")
+        // NB: Do *not* use --pull. It's not needed, since it uses the
+        // just-built images for all its bases, and including it will cause us
+        // to overwrite the images we just built with the ones on Docker Hub,
+        // resulting in us both trashing those before we've pushed updated ones
+        // and building this image with stale sources.
+        sdkQemuImage = docker.build("ctsrd/cheribsd-sdk-qemu-${suffix}", " --build-arg TARGET_ARCH=${suffix} .")
     }
     stage("Test CheriBSD (${suffix}) SDK image") {
         sdkImage.inside {
