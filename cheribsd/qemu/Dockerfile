@@ -6,7 +6,7 @@ ARG TARGET_ARCH
 # --from" this stage end up in the final docker layers generated.
 FROM ctsrd/qemu-cheri:latest
 RUN mkdir -p /opt/cheri/output/rootfs-${TARGET_ARCH}/boot/kernel
-COPY --chown=cheri:cheri /opt/cheri/output/rootfs-${TARGET_ARCH}/boot/kernel/
+COPY --chown=cheri:cheri ./kernel.xz /opt/cheri/output/rootfs-${TARGET_ARCH}/boot/kernel/
 RUN unxz /opt/cheri/output/rootfs-${TARGET_ARCH}/boot/kernel/kernel.xz
 COPY --chown=cheri:cheri ./cheribsd-*.img.xz /opt/cheri/output/
 # TODO: When everything's at least as new as Ubuntu Focal, add back
