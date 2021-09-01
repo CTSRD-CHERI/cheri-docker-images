@@ -1,10 +1,11 @@
-ARG TARGET_ARCH
-
 # Staged build: import, decompress, and convert disk images (and kernel).  Doing
 # this dance before another "FROM" statement below means that, while we "COPY"
 # the Jenkins artifacts in for processing, only things we explicitly "COPY
 # --from" this stage end up in the final docker layers generated.
 FROM ctsrd/qemu-cheri:latest
+
+ARG TARGET_ARCH
+
 RUN mkdir -p /opt/cheri/output/rootfs-${TARGET_ARCH}/boot/kernel
 COPY --chown=cheri:cheri ./kernel.xz /opt/cheri/output/rootfs-${TARGET_ARCH}/boot/kernel/
 RUN unxz /opt/cheri/output/rootfs-${TARGET_ARCH}/boot/kernel/kernel.xz
@@ -19,6 +20,9 @@ RUN for i in /opt/cheri/output/cheribsd-*.img.xz; do \
 
 # Staged build: the actual image
 FROM ctsrd/qemu-cheri:latest
+
+ARG TARGET_ARCH
+
 ENV PATH=/opt/cheri/output/sdk/bin:/opt/cheri/output/cheribuild:$PATH
 COPY --from=0 --chown=cheri:cheri /opt/cheri/output/rootfs-${TARGET_ARCH} /opt/cheri/output/cheribsd-*.qcow2 /opt/cheri/output/
 # Do this last, it will change frequently
