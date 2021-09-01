@@ -1,0 +1,7 @@
+{
+	"skip-update": true,
+	"source-root": "/cheri-sdk",
+	"disk-image": {
+		"use-qcow2": true
+	}
+}

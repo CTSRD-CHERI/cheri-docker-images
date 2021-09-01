@@ -14,6 +14,9 @@ USER cheri
 # add SSH key
 RUN mkdir -p ~/.ssh && ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519 < /dev/null && chmod 700 ~/.ssh && chmod 600 ~/.ssh/*
 
+RUN mkdir -p ~/.config
+COPY --chown=cheri:cheri cheribuild.json ~/.config/
+
 COPY --chown=cheri:cheri ./qemu-linux /cheri-sdk
 
 CMD ["bash"]
