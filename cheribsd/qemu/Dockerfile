@@ -16,6 +16,7 @@ COPY --chown=cheri:cheri ./cheribsd-*.img.xz /opt/cheri/output/
 RUN for i in /opt/cheri/output/cheribsd-*.img.xz; do \
   unxz $i; i=${i%.xz}; \
   /opt/cheri/output/sdk/bin/qemu-img convert -O qcow2 -c $i ${i%.img}.qcow2; \
+  rm $i; \
  done
 
 # Staged build: the actual image
