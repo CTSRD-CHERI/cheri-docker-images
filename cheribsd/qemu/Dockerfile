@@ -14,12 +14,12 @@ COPY --chown=cheri:cheri ./cheribsd-*.img.xz /opt/cheri/output/
 # the moment, tho', we'll leave `-c` to its default (i.e., zlib).
 RUN for i in /opt/cheri/output/cheribsd-*.img.xz; do \
   unxz $i; i=${i%.xz}; \
-  /opt/cheri/output/bin/qemu-img convert -O qcow2 -c $i ${i%.img}.qcow2; \
+  /opt/cheri/output/sdk/bin/qemu-img convert -O qcow2 -c $i ${i%.img}.qcow2; \
  done
 
 # Staged build: the actual image
 FROM ctsrd/qemu-cheri:latest
-ENV PATH=/opt/cheri/output/bin:/opt/cheri/output/cheribuild:$PATH
+ENV PATH=/opt/cheri/output/sdk/bin:/opt/cheri/output/cheribuild:$PATH
 COPY --from=0 --chown=cheri:cheri /opt/cheri/output/rootfs-${TARGET_ARCH} /opt/cheri/output/cheribsd-*.qcow2 /opt/cheri/output/
 # Do this last, it will change frequently
 RUN git clone https://github.com/CTSRD-CHERI/cheribuild.git /opt/cheri/output/cheribuild
