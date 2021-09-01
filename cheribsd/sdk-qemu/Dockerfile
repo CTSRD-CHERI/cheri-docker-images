@@ -5,5 +5,5 @@ FROM ctsrd/cheribsd-qemu-${TARGET_ARCH}:latest
 
 FROM ctsrd/cheribsd-sdk-${TARGET_ARCH}:latest
 
-COPY --from=0 /cheri-sdk /cheri-sdk
+COPY --from=0 --chown=cheri:cheri /cheri-sdk /cheri-sdk
 CMD ["bash"]

@@ -2,7 +2,7 @@ FROM ctsrd/qemu-cheri:latest
 
 ARG cmake_version
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y --no-install-recommends \
   make ninja-build \
   autoconf automake autotools-dev libsigsegv2 m4 \
   flex bison \
@@ -15,8 +15,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 ADD ./cmake-${cmake_version}-Linux-x86_64.tar.gz /usr/local
 
 # install clang SDK
-ADD ./cheri-clang-llvm.tar.xz /cheri-sdk
- 
+ADD --chown=cheri:cheri ./cheri-clang-llvm.tar.xz /cheri-sdk
+
 # For now don't install cheribsd sysroot
 # COPY ./${target}-vanilla-jemalloc-cheribsd-world.tar.xz /tmp
 # --exclude=bin so that we don't extract the freebsd binaries
