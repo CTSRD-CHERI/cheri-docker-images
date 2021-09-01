@@ -27,7 +27,7 @@ def buildSDKImage() {
             sh "qemu-system-riscv64cheri --help > /dev/null"
             sh "mips64-unknown-freebsd-clang --version"
             sh "clang++ --version"
-            sh "ls -l /cheri-sdk/bin"
+            sh "ls -l /opt/cheri/output/sdk/bin"
 
         }
     }

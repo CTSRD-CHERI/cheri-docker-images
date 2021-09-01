@@ -1,6 +1,6 @@
 {
 	"skip-update": true,
-	"source-root": "/cheri-sdk",
+	"source-root": "/opt/cheri",
 	"disk-image": {
 		"use-qcow2": true
 	}

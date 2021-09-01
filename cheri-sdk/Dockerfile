@@ -15,21 +15,15 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y --
 ADD ./cmake-${cmake_version}-Linux-x86_64.tar.gz /usr/local
 
 # install clang SDK
-ADD --chown=cheri:cheri ./cheri-clang-llvm.tar.xz /cheri-sdk
-
-# For now don't install cheribsd sysroot
-# COPY ./${target}-vanilla-jemalloc-cheribsd-world.tar.xz /tmp
-# --exclude=bin so that we don't extract the freebsd binaries
-# RUN tar Jxf /tmp/${target}-vanilla-jemalloc-cheribsd-world.tar.xz --strip-components 1 -C /cheri-sdk --exclude=bin \
-#  && rm /tmp/${target}-vanilla-jemalloc-cheribsd-world.tar.xz
+ADD --chown=cheri:cheri ./cheri-clang-llvm.tar.xz /opt/cheri/output/sdk
 
 # Do this last, it will change frequently
-RUN git clone https://github.com/CTSRD-CHERI/cheribuild.git /cheri-sdk/cheribuild
+RUN git clone https://github.com/CTSRD-CHERI/cheribuild.git /opt/cheri/cheribuild
 
 # VOLUME /workspace
 # WORKDIR /
 # ENV WORKSPACE=/workspace
-ENV PATH=/cheri-sdk/bin:/cheri-sdk/cheribuild:$PATH
+ENV PATH=/opt/cheri/output/sdk/bin:/opt/cheri/cheribuild:$PATH
 
 #CMD ["qemu-system-cheri"]
 CMD ["bash"]
