@@ -5,9 +5,12 @@
 FROM ctsrd/qemu-cheri:latest
 COPY ./cheribsd-*.img.xz ./kernel.xz /cheri-sdk/
 RUN unxz /cheri-sdk/kernel.xz
+# TODO: When everything's at least as new as Ubuntu Focal, add back
+# "-o compression_type=zstd" to the `qemu-img convert` invocation below.  For
+# the moment, tho', we'll leave `-c` to its default (i.e., zlib).
 RUN for i in /cheri-sdk/cheribsd-*.img.xz; do \
   unxz $i; i=${i%.xz}; \
-  /cheri-sdk/bin/qemu-img convert -o compression_type=zstd -O qcow2 -c $i ${i%.img}.qcow2; \
+  /cheri-sdk/bin/qemu-img convert -O qcow2 -c $i ${i%.img}.qcow2; \
  done
 
 # Staged build: the actual image
