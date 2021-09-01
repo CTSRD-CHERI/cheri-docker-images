@@ -7,7 +7,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 RUN mkdir -p /cheri-sdk
 ENV PATH=/cheri-sdk/bin:$PATH
 
-RUN useradd -G sudo cheri
+RUN useradd -m -G sudo cheri
 RUN chown cheri:cheri /cheri-sdk
 USER cheri
 
