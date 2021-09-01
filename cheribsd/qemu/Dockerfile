@@ -24,10 +24,10 @@ FROM ctsrd/qemu-cheri:latest
 
 ARG TARGET_ARCH
 
-ENV PATH=/opt/cheri/output/sdk/bin:/opt/cheri/output/cheribuild:$PATH
+ENV PATH=/opt/cheri/output/sdk/bin:/opt/cheri/cheribuild:$PATH
 COPY --from=0 --chown=cheri:cheri /opt/cheri/output /opt/cheri/output
 # Do this last, it will change frequently
-RUN git clone https://github.com/CTSRD-CHERI/cheribuild.git /opt/cheri/output/cheribuild
+RUN git clone https://github.com/CTSRD-CHERI/cheribuild.git /opt/cheri/cheribuild
 
 #CMD ["qemu-system-cheri"]
 CMD ["bash"]
