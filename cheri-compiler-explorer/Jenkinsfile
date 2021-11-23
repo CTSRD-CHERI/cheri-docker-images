@@ -6,7 +6,7 @@ def buildCompilerExplorer() {
     stage("Build compiler explorer") {
         dir ('cheri-compiler-explorer') {
             // Get the CheriBSD sysroots by fetching the SDKs:
-            copyArtifacts filter: 'artifacts-mips64-purecap/cheribsd-sysroot.tar.xz,artifacts-riscv64-purecap/cheribsd-sysroot.tar.xz,artifacts-morello-purecap/cheribsd-sysroot.tar.xz', projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
+            copyArtifacts filter: 'artifacts-mips64-purecap/cheribsd-sysroot.tar.xz,artifacts-riscv64-purecap/cheribsd-sysroot.tar.xz,artifacts-morello-purecap/cheribsd-sysroot.tar.xz', projectName: 'CheriBSD-pipeline/main', selector: lastSuccessful()
             copyArtifacts filter: 'morello-clang-llvm.tar.xz', projectName: 'Morello-LLVM-linux/morello%2Fmaster', selector: lastSuccessful()
             sh """
 cp -f ../cheri-clang-llvm.tar.xz .

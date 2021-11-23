@@ -4,7 +4,7 @@ def buildCheriBSDImage(String suffix) {
     def sdkQemuImage
     stage("Copy CheriBSD ${suffix} artifact") {
         echo "Copying CheriBSD artifacts (artifacts-${suffix}/**)"
-        copyArtifacts filter: "artifacts-${suffix}/**", projectName: 'CheriBSD-pipeline/master', selector: lastSuccessful()
+        copyArtifacts filter: "artifacts-${suffix}/**", projectName: 'CheriBSD-pipeline/main', selector: lastSuccessful()
         sh """
 echo ${suffix}
 find .
