@@ -24,6 +24,7 @@ RUN /cheri-sdk/bin/clang --version && /morello-sdk/bin/clang --version
 
 ENV HOME /home/gcc-user
 USER gcc-user
+ENV NODE_ENV production
 # Build newest version of compiler-explorer (and ensure that we do the clone as gcc-user)
 RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG USER: $(whoami)"; false; fi && \
       git clone --depth=1 https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && make -C /compiler-explorer prereqs
