@@ -30,7 +30,7 @@ USER gcc-user
 COPY patches/*.diff /patches/
 RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG USER: $(whoami)"; false; fi && \
       git clone --depth=1 https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && \
-      patch -p1 -d /compiler-explorer < (cat /patches/*.diff) && \
+      cat /patches/*.diff | patch -p1 -d /compiler-explorer && \
       rm -r /patches && \
       make -C /compiler-explorer prereqs
 
