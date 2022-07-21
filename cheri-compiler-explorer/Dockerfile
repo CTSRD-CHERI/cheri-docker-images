@@ -22,16 +22,16 @@ COPY sysroot-morello-purecap /morello-sdk/sysroot-morello-purecap
 # Sanity check that compilers work
 RUN /cheri-sdk/bin/clang --version && /morello-sdk/bin/clang --version
 
-RUN mkdir -p /patches && chown gcc-user /patches
+RUN mkdir -p /tmp/patches && chown gcc-user /tmp/patches
 
 ENV HOME /home/gcc-user
 USER gcc-user
 # Build newest version of compiler-explorer (and ensure that we do the clone as gcc-user)
-COPY patches/*.diff /patches/
+COPY patches/*.diff /tmp/patches/
 RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG USER: $(whoami)"; false; fi && \
       git clone --depth=1 https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && \
-      cat /patches/*.diff | patch -p1 -d /compiler-explorer && \
-      rm -r /patches && \
+      cat /tmp/patches/*.diff | patch -p1 -d /compiler-explorer && \
+      rm -r /tmp/patches && \
       make -C /compiler-explorer prereqs
 
 COPY *.local.properties /compiler-explorer/etc/config/
