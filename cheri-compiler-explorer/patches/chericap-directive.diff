@@ -1,5 +1,4 @@
 diff --git a/lib/parsers/asm-parser.js b/lib/parsers/asm-parser.js
-index 9e254948..a20398f6 100644
 --- a/lib/parsers/asm-parser.js
 +++ b/lib/parsers/asm-parser.js
 @@ -36,7 +36,7 @@ export class AsmParser extends AsmRegex {
@@ -8,6 +7,6 @@ index 9e254948..a20398f6 100644
          this.mipsLabelDefinition = /^\$[\w$.]+:/;
 -        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|x?word|long|quad|value|zero)/;
 +        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|x?word|long|quad|value|zero|chericap)/;
-         this.fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)"(\s+"([^"]+)")?.*/;
+         this.fileFind = /^\s*\.(?:cv_)?file\s+(\d+)\s+"([^"]+)"(\s+"([^"]+)")?.*/;
          // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
          this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
