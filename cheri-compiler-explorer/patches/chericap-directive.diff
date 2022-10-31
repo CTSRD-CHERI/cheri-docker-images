@@ -1,7 +1,7 @@
-diff --git a/lib/parsers/asm-parser.js b/lib/parsers/asm-parser.js
---- a/lib/parsers/asm-parser.js
-+++ b/lib/parsers/asm-parser.js
-@@ -36,7 +36,7 @@ export class AsmParser extends AsmRegex {
+diff --git a/lib/parsers/asm-parser.ts b/lib/parsers/asm-parser.ts
+--- a/lib/parsers/asm-parser.ts
++++ b/lib/parsers/asm-parser.ts
+@@ -83,7 +83,7 @@ export class AsmParser extends AsmRegex {
          // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
          this.labelFindMips = /[$.A-Z_a-z][\w$.]*/g;
          this.mipsLabelDefinition = /^\$[\w$.]+:/;
