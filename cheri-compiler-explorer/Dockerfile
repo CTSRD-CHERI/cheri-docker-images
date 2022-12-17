@@ -32,7 +32,7 @@ RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG U
       git clone --depth=1 https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && \
       cat /tmp/patches/*.diff | patch -p1 -d /compiler-explorer && \
       rm -r /tmp/patches && \
-      make -C /compiler-explorer prereqs
+      make -C /compiler-explorer prebuild
 
 COPY *.local.properties /compiler-explorer/etc/config/
 # Upstream's example is x86-only (uses jmp); replace with a more portable
@@ -47,4 +47,4 @@ USER root
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
 EXPOSE 10240
-CMD ["run"]
+CMD ["run-only"]
