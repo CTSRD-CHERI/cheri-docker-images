@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 2fb6b5bd..41a3a308 100644
+index 2fb6b5bd..090b4f87 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -70,12 +70,20 @@ pre-commit: $(NODE_MODULES) test-min lint
@@ -14,7 +14,7 @@ index 2fb6b5bd..41a3a308 100644
  	$(NPM) run ts-compile
 +
 +.PHONY: run-only
-+run-only:  ## Runs the site like it runs in production without building it
++run-only: node-installed  ## Runs the site like it runs in production without building it
  	env NODE_ENV=production $(NODE) $(NODE_ARGS) -r esm ./out/dist/app.js --webpackContent ./out/webpack/static $(EXTRA_ARGS)
  
 +.PHONY: run
