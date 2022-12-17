@@ -47,6 +47,4 @@ USER root
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
 EXPOSE 10240
-# XXX: Move to before the make once https://github.com/compiler-explorer/compiler-explorer/issues/3287 is resolved
-ENV NODE_ENV production
 CMD ["run"]
