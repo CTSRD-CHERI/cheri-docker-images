@@ -2,6 +2,13 @@ def buildCheriBSDImage(String suffix) {
     def sdkImage
     def qemuImage
     def sdkQemuImage
+    String toolchain = 'cheri'
+    String llvmSdkDir = 'sdk'
+    if (suffix.startsWith('morello')) {
+        toolchain = 'morello'
+        llvmSdkDir = 'morello-sdk'
+    }
+
     stage("Copy CheriBSD ${suffix} artifact") {
         echo "Copying CheriBSD artifacts (artifacts-${suffix}/**)"
         copyArtifacts filter: "artifacts-${suffix}/**", projectName: 'CheriBSD-pipeline/main', selector: lastSuccessful()
@@ -15,7 +22,7 @@ done
     }
     stage("Build CheriBSD (${suffix}) SDK image") {
         sh 'pwd && cp -f ../cheribsd/sdk/Dockerfile . && ls -la'
-        sdkImage = docker.build("ctsrd/cheribsd-sdk-${suffix}", "--build-arg TARGET_ARCH=${suffix} --pull .")
+        sdkImage = docker.build("ctsrd/cheribsd-sdk-${suffix}", "--build-arg TARGET_ARCH=${suffix} --build-arg toolchain=${toolchain} --build-arg llvm_sdk_dir=${llvm_sdk_dir} --pull .")
     }
     stage("Build CheriBSD (${suffix}) QEMU image") {
         sh 'pwd && cp -f ../cheribsd/qemu/Dockerfile . && ls -la'
@@ -40,7 +47,10 @@ done
             sh "ls -la /opt/cheri/output"
             sh "ls -la /opt/cheri/output/sdk"
             sh "ls -la /opt/cheri/output/sdk/bin"
-
+            if (llvm_sdk_dir != 'sdk') {
+                sh "ls -la /opt/cheri/output/${llvm_sdk_dir}"
+                sh "ls -la /opt/cheri/output/${llvm_sdk_dir}/bin"
+            }
         }
     }
     stage("Test CheriBSD (${suffix}) QEMU image") {
@@ -53,7 +63,7 @@ done
             sh "ls -la /opt/cheri/output/sdk"
             sh "ls -la /opt/cheri/output/sdk/bin"
             '''
-for i in cheri128 riscv64cheri aarch64 x86_64;
+for i in cheri128 morello riscv64cheri aarch64 x86_64;
 do
     which qemu-system-$i
     qemu-system-$i --help > /dev/null
@@ -71,8 +81,12 @@ done
             sh "ls -la /opt/cheri/output"
             sh "ls -la /opt/cheri/output/sdk"
             sh "ls -la /opt/cheri/output/sdk/bin"
+            if (llvm_sdk_dir != 'sdk') {
+                sh "ls -la /opt/cheri/output/${llvm_sdk_dir}"
+                sh "ls -la /opt/cheri/output/${llvm_sdk_dir}/bin"
+            }
             '''
-for i in cheri128 riscv64cheri aarch64 x86_64;
+for i in cheri128 morello riscv64cheri aarch64 x86_64;
 do
     which qemu-system-$i
     qemu-system-$i --help > /dev/null
@@ -99,7 +113,7 @@ def doBuild() {
         checkout scm
         sh "pwd"
     }
-    def targets = ['riscv64-purecap', 'riscv64', 'aarch64', 'amd64']
+    def targets = ['aarch64', 'amd64', 'morello-purecap', 'riscv64', 'riscv64-purecap']
     // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
     stage('Build SDK docker images') {
         parallel targets.collectEntries { String suffix ->

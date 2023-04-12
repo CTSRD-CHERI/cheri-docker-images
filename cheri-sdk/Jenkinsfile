@@ -8,15 +8,27 @@ cmakeVersionFull="${cmakeVersionMaj}.${cmakeVersionMin}.${cmakeVersionPat}"
 cmakeUrlDir = "v${cmakeVersionMaj}.${cmakeVersionMin}"
 cmakeArchive = "cmake-${cmakeVersionFull}-Linux-x86_64.tar.gz"
 
-def buildSDKImage() {
+def buildSDKImage(String toolchain) {
+    def llvmJob = "CLANG-LLVM-linux/master"
+    String llvmSdkDir = 'sdk'
+    if (toolchain == 'morello') {
+        llvmJob = "Morello-LLVM-linux/morello%2Fmaster"
+        llvmSdkDir = 'morello-sdk'
+    }
+
+    stage("Copy artifacts") {
+        // fetch cmake
+        sh "test -e $cmakeArchive || curl -O https://cmake.org/files/$cmakeUrlDir/$cmakeArchive"
+        // For clang copy the last successful build instead of the one with all tests passed for now since there are some flaky tests
+        copyArtifacts filter: "${toolchain}-clang-llvm.tar.xz", projectName: llvmJob, selector: lastSuccessful()
+    }
+
     def app
     stage("Build image") {
-        dir ('cheri-sdk') {
-            sh "cp -f ../cheri-clang-llvm.tar.xz ../${cmakeArchive} . && pwd && ls -la"
-            /* This builds the actual image; synonymous to docker build on the command line */
-            // We clone cheribuild with a RUN command so need --no-cache
-            app = docker.build("ctsrd/cheri-sdk", "--pull --no-cache --build-arg cmake_version=${cmakeVersionFull} .")
-        }
+        sh 'pwd && cp -f ../cheri-sdk/Dockerfile . && ls -la'
+        /* This builds the actual image; synonymous to docker build on the command line */
+        // We clone cheribuild with a RUN command so need --no-cache
+        app = docker.build("ctsrd/${toolchain}-sdk", "--pull --no-cache --build-arg cmake_version=${cmakeVersionFull} --build-arg toolchain=${toolchain} --build-arg llvm_sdk_dir=${llvmSdkDir} .")
     }
 
     stage("Test image") {
@@ -24,9 +36,10 @@ def buildSDKImage() {
             sh "env | sort"
             // check that QEMU works
             sh "qemu-system-cheri128 --help > /dev/null"
+            sh "qemu-system-morello --help > /dev/null"
             sh "qemu-system-riscv64cheri --help > /dev/null"
             sh "clang++ --version"
-            sh "ls -l /opt/cheri/output/sdk/bin"
+            sh "ls -l /opt/cheri/output/${llvmSdkDir}/bin"
 
         }
     }
@@ -47,22 +60,28 @@ def buildSDKImage() {
 
 def doBuild() {
     stage('Clone repository') {
+        sh "rm -rf build-*"
         /* Let's make sure we have the repository cloned to our workspace */
         checkout scm
         sh "pwd"
     }
-    stage("Copy artifacts") {
-        // fetch cmake
-        sh "test -e $cmakeArchive || curl -O https://cmake.org/files/$cmakeUrlDir/$cmakeArchive"
-        // copyArtifacts filter: 'binutils.tar.bz2', projectName: 'CHERI-binutils/label=linux/', selector: lastSuccessful()
-        // copyArtifacts filter: 'elftoolchain.tar.xz', projectName: 'elftoolchain/label=linux/'
-        // For clang copy the last successful build instead of the one with all tests passed for now since there are some flaky tests
-        copyArtifacts filter: 'cheri-clang-llvm.tar.xz', projectName: 'CLANG-LLVM-linux/master', selector: lastSuccessful()
-        sh "pwd && ls -la"
+    def toolchains = ['cheri', 'morello']
+    // don't user for loops and closures: http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
+    stage('Build SDK docker images') {
+        parallel toolchains.collectEntries { String toolchain ->
+            [toolchain, {
+                dir("build-${toolchain}") {
+                    buildSDKImage(toolchain)
+                }
+            }]
+        }
     }
-    buildSDKImage()
+    stage("Cleaning up") {
+        pwd
+        sh "rm -rf build-*"
+        sh "ls -laR"
+    }
 }
-
 
 try {
     node("docker") {

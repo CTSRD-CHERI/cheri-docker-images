@@ -1,7 +1,11 @@
 digraph {
 	"qemu-cheri" -> "cheri-sdk"
+	"qemu-cheri" -> "morello-sdk"
 	"cheri-sdk" -> "cheribsd-sdk-<arch>"
+	"morello-sdk" -> "cheribsd-sdk-<morello-arch>"
 	"qemu-cheri" -> "cheribsd-qemu-<arch>"
 	"cheribsd-sdk-<arch>" -> "cheribsd-sdk-qemu-<arch>"
 	"cheribsd-qemu-<arch>" -> "cheribsd-sdk-qemu-<arch>" [style=dashed]
+	"cheribsd-sdk-<morello-arch>" -> "cheribsd-sdk-qemu-<morello-arch>"
+	"cheribsd-qemu-<arch>" -> "cheribsd-sdk-qemu-<morello-arch>" [style=dashed]
 }

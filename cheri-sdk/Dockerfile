@@ -1,6 +1,8 @@
 FROM ctsrd/qemu-cheri:latest
 
 ARG cmake_version
+ARG toolchain
+ARG llvm_sdk_dir
 
 RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y --no-install-recommends \
   make ninja-build \
@@ -15,7 +17,7 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y --
 ADD ./cmake-${cmake_version}-Linux-x86_64.tar.gz /usr/local
 
 # install clang SDK
-ADD --chown=cheri:cheri ./cheri-clang-llvm.tar.xz /opt/cheri/output/sdk
+ADD --chown=cheri:cheri ./${toolchain}-clang-llvm.tar.xz /opt/cheri/output/${llvm_sdk_dir}
 
 # Do this last, it will change frequently
 RUN git clone https://github.com/CTSRD-CHERI/cheribuild.git /opt/cheri/cheribuild
@@ -23,7 +25,7 @@ RUN git clone https://github.com/CTSRD-CHERI/cheribuild.git /opt/cheri/cheribuil
 # VOLUME /workspace
 # WORKDIR /
 # ENV WORKSPACE=/workspace
-ENV PATH=/opt/cheri/output/sdk/bin:/opt/cheri/cheribuild:$PATH
+ENV PATH=/opt/cheri/output/${llvm_sdk_dir}/bin:/opt/cheri/cheribuild:$PATH
 
 #CMD ["qemu-system-cheri"]
 CMD ["bash"]
