@@ -47,9 +47,9 @@ done
             sh "ls -la /opt/cheri/output"
             sh "ls -la /opt/cheri/output/sdk"
             sh "ls -la /opt/cheri/output/sdk/bin"
-            if (llvm_sdk_dir != 'sdk') {
-                sh "ls -la /opt/cheri/output/${llvm_sdk_dir}"
-                sh "ls -la /opt/cheri/output/${llvm_sdk_dir}/bin"
+            if (llvmSdkDir != 'sdk') {
+                sh "ls -la /opt/cheri/output/${llvmSdkDir}"
+                sh "ls -la /opt/cheri/output/${llvmSdkDir}/bin"
             }
         }
     }
@@ -81,9 +81,9 @@ done
             sh "ls -la /opt/cheri/output"
             sh "ls -la /opt/cheri/output/sdk"
             sh "ls -la /opt/cheri/output/sdk/bin"
-            if (llvm_sdk_dir != 'sdk') {
-                sh "ls -la /opt/cheri/output/${llvm_sdk_dir}"
-                sh "ls -la /opt/cheri/output/${llvm_sdk_dir}/bin"
+            if (llvmSdkDir != 'sdk') {
+                sh "ls -la /opt/cheri/output/${llvmSdkDir}"
+                sh "ls -la /opt/cheri/output/${llvmSdkDir}/bin"
             }
             '''
 for i in cheri128 morello riscv64cheri aarch64 x86_64;
