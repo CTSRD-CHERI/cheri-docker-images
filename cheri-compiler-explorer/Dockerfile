@@ -34,7 +34,7 @@ RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG U
       cat /tmp/patches/*.diff | patch -p1 -d /compiler-explorer && \
       rm -r /tmp/patches && \
       make -C /compiler-explorer prebuild && \
-      ln -ns ../examples /compiler-explorer/out/dist/examples
+      ln -ns ../../examples /compiler-explorer/out/dist/examples
 
 COPY *.local.properties /compiler-explorer/etc/config/
 # Upstream's example is x86-only (uses jmp); replace with a more portable
