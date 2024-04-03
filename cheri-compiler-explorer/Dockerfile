@@ -27,14 +27,12 @@ RUN mkdir -p /tmp/patches && chown gcc-user /tmp/patches
 ENV HOME /home/gcc-user
 USER gcc-user
 # Build newest version of compiler-explorer (and ensure that we do the clone as gcc-user)
-# XXX: Symlink is a workaround for https://github.com/compiler-explorer/compiler-explorer/pull/6237#issuecomment-1994193168
 COPY patches/*.diff /tmp/patches/
 RUN if [ "$(whoami)" = "gcc-user" ]; then echo "Correct UID"; else echo "WRONG USER: $(whoami)"; false; fi && \
       git clone --depth=1 https://github.com/mattgodbolt/compiler-explorer.git /compiler-explorer && \
       cat /tmp/patches/*.diff | patch -p1 -d /compiler-explorer && \
       rm -r /tmp/patches && \
-      make -C /compiler-explorer prebuild && \
-      ln -ns ../../examples /compiler-explorer/out/dist/examples
+      make -C /compiler-explorer prebuild
 
 COPY *.local.properties /compiler-explorer/etc/config/
 # Upstream's example is x86-only (uses jmp); replace with a more portable
