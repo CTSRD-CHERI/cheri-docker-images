@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     libpixman-1-0 libjpeg8 libpng16-16 libnuma1 libxml2 libsdl1.2debian libglib2.0-0 samba \
