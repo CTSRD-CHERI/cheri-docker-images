@@ -3,7 +3,7 @@ FROM ubuntu:20.04
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     libpixman-1-0 libjpeg8 libpng16-16 libnuma1 libxml2 libsdl1.2debian libglib2.0-0 samba \
     python3-minimal libpython3-stdlib bzip2 xz-utils openssh-client wget git ca-certificates \
-    libzstd1 sudo
+    libzstd1 sudo libncurses5
 RUN mkdir /opt/cheri
 ENV PATH=/opt/cheri/output/sdk/bin:$PATH
 
