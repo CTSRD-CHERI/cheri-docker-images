@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 RUN apt-get -y update \
- && DEBIAN_FRONTEND=noninteractive apt-get -y install git curl make sudo ca-certificates libxml2 libncurses5
+ && DEBIAN_FRONTEND=noninteractive apt-get -y install git curl make sudo ca-certificates libxml2 libncurses5 rsync
 
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt-get -y update \
